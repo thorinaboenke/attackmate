@@ -139,12 +139,12 @@ This section details the steps required to integrate a new command.</p>
 <p>All Commands in AttackMate inherit from <code class="docutils literal notranslate"><span class="pre">BaseCommand</span></code>.
 To create a new command, define a class in <cite>/src/attackmate/schemas</cite> and register it using the <code class="docutils literal notranslate"><span class="pre">&#64;CommandRegistry.register('&lt;command_type&gt;')</span></code> decorator.</p>
 <p>For example, to add a <code class="docutils literal notranslate"><span class="pre">debug</span></code> command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span>
-<span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">BaseCommand</span>
-<span class="kn">from</span> <span class="nn">attackmate.command</span> <span class="kn">import</span> <span class="n">CommandRegistry</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseCommand</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">attackmate.command</span><span class="w"> </span><span class="kn">import</span> <span class="n">CommandRegistry</span>
 
 <span class="nd">@CommandRegistry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s1">&#39;debug&#39;</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">DebugCommand</span><span class="p">(</span><span class="n">BaseCommand</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DebugCommand</span><span class="p">(</span><span class="n">BaseCommand</span><span class="p">):</span>
     <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;debug&#39;</span><span class="p">]</span>
     <span class="n">varstore</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">exit</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
@@ -158,13 +158,13 @@ make them usable in external python scripts.</p>
 <section id="implement-the-command-execution">
 <h2>2. Implement the Command Execution<a class="headerlink" href="#implement-the-command-execution" title="Permalink to this heading"></a></h2>
 <p>The new command should be handled by an executor in <cite>src/attackmate/executors`</cite> that extends <code class="docutils literal notranslate"><span class="pre">BaseExecutor</span></code> and implements the <code class="docutils literal notranslate"><span class="pre">_exec_cmd()</span></code> method. For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">attackmate.executors.base_executor</span> <span class="kn">import</span> <span class="n">BaseExecutor</span>
-<span class="kn">from</span> <span class="nn">attackmate.result</span> <span class="kn">import</span> <span class="n">Result</span>
-<span class="kn">from</span> <span class="nn">attackmate.executors.executor_factory</span> <span class="kn">import</span> <span class="n">executor_factory</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">attackmate.executors.base_executor</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseExecutor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">attackmate.result</span><span class="w"> </span><span class="kn">import</span> <span class="n">Result</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">attackmate.executors.executor_factory</span><span class="w"> </span><span class="kn">import</span> <span class="n">executor_factory</span>
 
 <span class="nd">@executor_factory</span><span class="o">.</span><span class="n">register_executor</span><span class="p">(</span><span class="s1">&#39;debug&#39;</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">DebugExecutor</span><span class="p">(</span><span class="n">BaseExecutor</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">_exec_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">:</span> <span class="n">DebugCommand</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Result</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DebugExecutor</span><span class="p">(</span><span class="n">BaseExecutor</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_exec_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">:</span> <span class="n">DebugCommand</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Result</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Executing debug command: </span><span class="si">{</span><span class="n">command</span><span class="o">.</span><span class="n">cmd</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Result</span><span class="p">(</span><span class="n">stdout</span><span class="o">=</span><span class="s2">&quot;Debug executed&quot;</span><span class="p">,</span> <span class="n">returncode</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
@@ -180,7 +180,7 @@ When a command is executed, the <code class="docutils literal notranslate"><span
 <p>If the new executor class requires additional initialization arguments, these must be added to the <code class="docutils literal notranslate"><span class="pre">_get_executor_config</span></code> method in <code class="docutils literal notranslate"><span class="pre">attackmate.py</span></code>.
 All configurations are always passed to the <code class="docutils literal notranslate"><span class="pre">ExecutorFactory</span></code>.
 The factory filters the provided configurations based on the class constructor signature, ensuring that only the required parameters are used.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_get_executor_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_get_executor_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;pm&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pm</span><span class="p">,</span>
     <span class="s1">&#39;varstore&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">varstore</span><span class="p">,</span>
