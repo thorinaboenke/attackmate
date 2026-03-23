@@ -8,12 +8,12 @@ Handouts are in `handout/` and meant to be given to participants as reference ma
 
 | File | Topic |
 |---|---|
-| `01_introduction.md` | What is AttackMate, lab environment, playbook structure |
-| `02_variables_and_builtins.md` | Variables, builtin variables, setvar, debug |
-| `03_shell_and_regex.md` | Shell commands, regex modes, mktemp |
-| `04_conditionals_loops_errors.md` | only_if, error handling, loop command, sleep |
-| `05_ssh_and_sftp.md` | SSH connections, sessions, interactive mode, SFTP |
-| `06_command_reference.md` | Quick reference card for all Day 1 commands |
+| [`01_introduction.md`](handout/01_introduction.md) | What is AttackMate, lab environment, playbook structure |
+| [`02_variables_and_builtins.md`](handout/02_variables_and_builtins.md) | Variables, builtin variables, setvar, debug |
+| [`03_shell_and_regex.md`](handout/03_shell_and_regex.md) | Shell commands, regex modes, mktemp |
+| [`04_conditionals_loops_errors.md`](handout/04_conditionals_loops_errors.md) | only_if, error handling, loop command, sleep |
+| [`05_ssh_and_sftp.md`](handout/05_ssh_and_sftp.md) | SSH connections, sessions, interactive mode, SFTP |
+| [`06_command_reference.md`](handout/06_command_reference.md) | Quick reference card for all Day 1 commands |
 
 ### Walkthroughs (Guided)
 
@@ -21,10 +21,10 @@ Walkthroughs are in `walkthroughs/` and are run together with the instructor. Ea
 
 | File | Topic | Requires Target |
 |---|---|---|
-| `01_hello_world.yml` | Variables, shell, debug, setvar, varstore | No |
-| `02_regex_modes.yml` | findall, split, search, sub | No |
-| `03_conditionals_and_loops.yml` | only_if, loop with range() | No |
-| `04_ssh_attack_chain.yml` | Full SSH attack (nmap, hydra, ssh, sftp, priv esc) | Yes |
+| [`01_hello_world.yml`](walkthroughs/01_hello_world.yml) | Variables, shell, debug, setvar, varstore | No |
+| [`02_regex_modes.yml`](walkthroughs/02_regex_modes.yml) | findall, split, search, sub | No |
+| [`03_conditionals_and_loops.yml`](walkthroughs/03_conditionals_and_loops.yml) | only_if, loop with range() | No |
+| [`04_ssh_attack_chain.yml`](walkthroughs/04_ssh_attack_chain.yml) | Full SSH attack (nmap, hydra, ssh, sftp, priv esc) | Yes |
 
 ### Exercises (Interactive)
 
@@ -32,10 +32,10 @@ Exercises are in `exercises/` and have `# TODO` comments that participants fill 
 
 | File | Topic |
 |---|---|
-| `exercise_01_basics.yml` | Variables, shell, debug, setvar |
-| `exercise_02_recon_and_parse.yml` | nmap scanning, regex parsing, conditionals |
-| `exercise_03_ssh_foothold.yml` | Credential bruteforce, SSH sessions, SFTP |
-| `exercise_04_multi_port_scanner.yml` | Loops, conditionals, adaptive scanning |
+| [`exercise_01_basics.yml`](exercises/exercise_01_basics.yml) | Variables, shell, debug, setvar |
+| [`exercise_02_recon_and_parse.yml`](exercises/exercise_02_recon_and_parse.yml) | nmap scanning, regex parsing, conditionals |
+| [`exercise_03_ssh_foothold.yml`](exercises/exercise_03_ssh_foothold.yml) | Credential bruteforce, SSH sessions, SFTP |
+| [`exercise_04_multi_port_scanner.yml`](exercises/exercise_04_multi_port_scanner.yml) | Loops, conditionals, adaptive scanning |
 
 ## Instructor Notes
 
