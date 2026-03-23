@@ -1,0 +1,62 @@
+#
+# Walkthrough 1: Hello World
+# Description:
+#     Your first AttackMate playbook. Demonstrates:
+#     - Basic playbook structure (vars + commands)
+#     - The shell command type
+#     - Variable definition and substitution
+#     - The debug command for output inspection
+#     - $RESULT_STDOUT and $RESULT_RETURNCODE builtin variables
+#
+# Run with:
+#     attackmate 01_hello_world.yml
+#
+# Run with debug output:
+#     attackmate --debug 01_hello_world.yml
+#
+
+vars:
+  GREETING: "Hello from AttackMate"
+  NAME: "trainee"
+
+commands:
+  # --- Basic shell command ---
+  # The simplest thing you can do: run a shell command
+  - type: shell
+    cmd: echo "Hello World"
+
+  # --- Using variables ---
+  # Variables defined in vars: are substituted wherever $VARNAME appears
+  - type: debug
+    cmd: "$GREETING, $NAME!"
+
+  # --- return codes ---
+  # $RESULT_RETURNCODE holds the exit status (0 = success)
+  - type: shell
+    cmd: echo "this succeeds"
+
+  - type: debug
+    cmd: Returncode of last command is $RESULT_RETURNCODE
+
+  # --- shell output goes to $RESULT_STDOUT ---
+  # After a shell command, its output is available as $RESULT_STDOUT
+  - type: shell
+    cmd: whoami
+
+  - type: debug
+    cmd: "I am running as: $RESULT_STDOUT"
+
+  # --- setvar ---
+  # You can create variables dynamically during execution
+  - type: setvar
+    variable: COMBINED
+    cmd: "$GREETING -- running as $RESULT_STDOUT"
+
+  - type: debug
+    cmd: "Combined: $COMBINED"
+
+  # --- dump all variables ---
+  # Use varstore: True to see everything that's been set
+  - type: debug
+    cmd: "=== Variable Dump With Debug Command ==="
+    varstore: True

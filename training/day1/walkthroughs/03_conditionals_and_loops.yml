@@ -1,0 +1,94 @@
+#
+# Walkthrough 3: Conditionals and Loops
+# Description:
+#     Demonstrates conditional execution (only_if) and loop constructs.
+#     Uses simulated data so this works without a live target.
+#
+#     Topics covered:
+#     1. only_if with equality checks
+#     2. only_if with regex matching (=~)
+#     3. loop with items()
+#     4. loop with range()
+#     5. Combining loops with conditionals
+#
+# Run with:
+#     attackmate 03_conditionals_and_loops.yml
+#
+vars:
+  TARGET_PORT: "80"
+  STATUS: "open"
+  PORTS:
+    - "22"
+    - "80"
+    - "443"
+commands:
+  # ============================================
+  # PART 1: Conditional Execution with only_if
+  # ============================================
+  - type: debug
+    cmd: "=== CONDITIONALS ==="
+  # This WILL execute because TARGET_PORT is 80
+  - type: debug
+    cmd: "Port is 80 -- running HTTP scan"
+    only_if: "$TARGET_PORT == 80"
+  # This will NOT execute because TARGET_PORT is not 443
+  - type: debug
+    cmd: "Port is 443 -- running HTTPS scan"
+    only_if: "$TARGET_PORT == 443"
+  # Regex matching with =~ (most robust approach)
+  - type: debug
+    cmd: "Status matches 'open' -- service is accessible"
+    only_if: "$STATUS =~ open"
+  # Negated regex with !~
+  - type: debug
+    cmd: "Status is NOT closed"
+    only_if: "$STATUS !~ closed"
+  - type: debug
+    cmd: "---"
+
+  # ============================================
+  # PART 2: Loop with items()
+  # Iterates over a list variable.
+  # The current element is available as $LOOP_ITEM.
+  # The list variable PORTS is defined in the vars section above.
+  # ============================================
+  - type: debug
+    cmd: "=== LOOP: items() ==="
+
+  - type: debug
+    cmd: "Iterating over PORTS list: $PORTS[0], $PORTS[1], $PORTS[2]"
+
+  - type: loop
+    cmd: "items(PORTS)"
+    commands:
+      - type: debug
+        cmd: "Current port: $LOOP_ITEM"
+
+  # ============================================
+  # PART 3: Loop with range()
+  # ============================================
+  - type: debug
+    cmd: "=== LOOP: range() ==="
+  - type: loop
+    cmd: "range(1, 4)"
+    commands:
+      - type: debug
+        cmd: "  Iteration number: $LOOP_INDEX"
+  - type: debug
+    cmd: "---"
+
+  # ============================================
+  # PART 4: Loops with commands inside
+  # ============================================
+  - type: debug
+    cmd: "=== PRACTICAL: Loop + Shell ==="
+  # Loop over a range and run a command each time
+  - type: loop
+    cmd: "range(0, 3)"
+    commands:
+      - type: shell
+        cmd: echo "Processing item $LOOP_INDEX"
+      - type: debug
+        cmd: "  Shell output was: $RESULT_STDOUT"
+  - type: debug
+    cmd: "=== DONE ==="

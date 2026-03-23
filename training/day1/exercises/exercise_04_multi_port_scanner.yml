@@ -1,0 +1,61 @@
+#
+# Exercise 4: Multi-Port Scanner with Loops and Conditionals
+# Difficulty: Intermediate-Advanced
+#
+# Description:
+#     Build a playbook that scans multiple ports on Metasploitable2,
+#     determines which services are open, and takes different actions
+#     depending on what it finds.
+#
+#     This exercise practices:
+#     - List variables
+#     - loop command with items()
+#     - Combining regex with conditionals
+#     - Building adaptive playbooks
+#
+# Instructions:
+#     1. Replace the TODO lines with your implementation
+#     2. Run with: attackmate exercise_04_multi_port_scanner.yml
+#     3. Try adding more ports to the SCAN_PORTS list and see what happens
+#
+
+vars:
+  TARGET: CHANGE_ME
+  SCAN_PORTS:
+    - 21
+    - 22
+    - 80
+    - 443
+    - 6667
+
+commands:
+  - type: debug
+    cmd: "=== Multi-Port Scanner ==="
+  - type: debug
+    cmd: "Target: $TARGET"
+  - type: debug
+    cmd: "---"
+
+  # TODO 1: Create a loop that iterates over the SCAN_PORTS list.
+  #          Inside the loop, do the following for each port:
+  #
+  #          a) Run nmap to scan the current port on the target:
+  #             nmap -p $LOOP_ITEM $TARGET
+  #             Set exit_on_error: False in case nmap has issues
+  #
+  #          b) Use regex with mode: search to check if the word "open"
+  #             appears in the nmap output. Store the result in PORT_STATUS.
+  #             Hint: input should be RESULT_STDOUT (which is the default)
+  #
+  #          c) Use debug to print: "Port <port>: <status>"
+  #             where <status> is the content of $PORT_STATUS
+  #
+  #          d) Add a conditional debug command that prints
+  #             "  --> Found open service on port $LOOP_ITEM!"
+  #             but ONLY if PORT_STATUS matches "open" (use =~ operator)
+  #
+
+  - type: debug
+    cmd: "---"
+  - type: debug
+    cmd: "=== Scan Complete ==="

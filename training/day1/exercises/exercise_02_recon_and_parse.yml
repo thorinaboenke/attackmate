@@ -1,0 +1,70 @@
+#
+# Exercise 2: Reconnaissance and Output Parsing
+# Difficulty: Beginner-Intermediate
+#
+# Description:
+#     Scan Metasploitable2, parse nmap output with regex, and
+#     use the parsed data in follow-up commands.
+#
+#     This exercise practices:
+#     - Running nmap via shell commands
+#     - Parsing structured output with regex
+#     - Using extracted values in subsequent commands
+#     - Conditional execution with only_if
+#
+# Instructions:
+#     1. Replace the TODO lines with your implementation
+#     2. Run with: attackmate exercise_02_recon_and_parse.yml
+#     3. Try running with --debug to see regex match details
+#
+# Hint: nmap output for an open port looks like:
+#     "21/tcp open  ftp"
+#     "22/tcp open  ssh"
+#     "80/tcp open http"
+#
+
+vars:
+  # TODO 1: Set TARGET to your Metasploitable2 IP address
+  TARGET: CHANGE_ME
+
+commands:
+  # === Part A: Port Scanning ===
+
+  # TODO 2: Run nmap to scan ports 21, 22, and 80 on the target
+  #          (Hint: nmap -p 21,22,80 <target>)
+
+  # TODO 3: Use a regex command to extract the port number of the HTTP service
+  #          from the nmap output.
+  #          Pattern hint: the line looks like "80/tcp open http"
+  #          Use a capture group to grab just the port number.
+  #          Store the result in a variable called HTTP_PORT.
+
+  # TODO 4: Print the extracted HTTP port with debug
+
+  # === Part B: Conditional Follow-Up ===
+
+  # TODO 5: Use a shell command with only_if to run "curl -s -o /dev/null -w '%{http_code}' http://$TARGET"
+  #          but ONLY if HTTP_PORT equals 80
+  #          (This checks the HTTP status code of the web server)
+
+  # TODO 6: Print the HTTP status code using debug
+  #          Expected output: "HTTP status code: 200"
+
+  # === Part C: Service Version Extraction ===
+
+  # TODO 7: Run a more detailed nmap scan: nmap -sV -p 21 $TARGET
+  #          (this detects the FTP service version)
+
+  # TODO 8: Use regex with mode: split to tokenize the FTP service line
+  #          Split on whitespace "\ +" and extract the service name and version
+  #          Hint: The output line looks like "21/tcp open  ftp     vsftpd 2.3.4"
+  #          After splitting on whitespace, the tokens are:
+  #            MATCH_0 = "21/tcp"
+  #            MATCH_1 = "open"
+  #            MATCH_2 = "ftp"
+  #            MATCH_3 = "vsftpd"
+  #            MATCH_4 = "2.3.4"
+  #          Store the service name (MATCH_3) in FTP_SERVICE
+
+  # TODO 9: Print the FTP service name and version
+  #          Expected output similar to: "FTP service: vsftpd"

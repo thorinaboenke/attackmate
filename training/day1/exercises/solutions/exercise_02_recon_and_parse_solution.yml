@@ -1,0 +1,58 @@
+#
+# Exercise 2: Solution
+#
+
+vars:
+  TARGET: 172.17.0.106
+
+commands:
+  # === Part A: Port Scanning ===
+
+  # TODO 2
+  - type: shell
+    cmd: nmap -p 21,22,80 $TARGET
+
+  # TODO 3
+  - type: regex
+    cmd: '(\d+)/tcp open http'
+    output:
+      HTTP_PORT: "$MATCH_0"
+
+  # TODO 4
+  - type: debug
+    cmd: "HTTP port: $HTTP_PORT"
+
+  # === Part B: Conditional Follow-Up ===
+
+  # TODO 5
+  - type: shell
+    cmd: "curl -s -o /dev/null -w '%{http_code}' http://$TARGET"
+    only_if: $HTTP_PORT == 80
+
+  # TODO 6
+  - type: debug
+    cmd: "HTTP status code: $RESULT_STDOUT"
+
+  # === Part C: Service Version Extraction ===
+
+  # TODO 7
+  - type: shell
+    cmd: nmap -sV -p 21 $TARGET
+
+  # TODO 8: We need to isolate the FTP line first, then split it
+  # Extract the vsftpd line from the full nmap output
+  - type: regex
+    cmd: "(21/tcp.+)"
+    output:
+      FTP_LINE: "$MATCH_0"
+
+  - type: regex
+    input: FTP_LINE
+    cmd: "\ +"
+    mode: split
+    output:
+      FTP_SERVICE: "$MATCH_3"
+
+  # TODO 9
+  - type: debug
+    cmd: "FTP service: $FTP_SERVICE"

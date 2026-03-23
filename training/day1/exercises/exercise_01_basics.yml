@@ -1,0 +1,44 @@
+#
+# Exercise 1: AttackMate Basics
+# Difficulty: Beginner
+#
+# Description:
+#     Complete this playbook by filling in the sections marked with TODO.
+#     This exercise practices:
+#     - Defining variables
+#     - Using the shell command
+#     - Using the debug command
+#     - Variable substitution
+#
+# Instructions:
+#     1. Read each TODO comment carefully
+#     2. Replace the TODO lines with your implementation
+#     3. Run with: attackmate exercise_01_basics.yml
+#     4. Verify the output matches the expected results in the comments
+#
+# Hint: Check the handout Module 1 and Module 2 if you get stuck.
+#
+
+vars:
+  # TODO 1: Define a variable called ATTACKER_NAME with your name as the value
+
+  # TODO 2: Define a variable called TARGET_IP with the IP of your Metasploitable2 VM
+
+commands:
+  # TODO 3: Use the debug command to print "Hello, I am <your name>"
+  #          using the ATTACKER_NAME variable
+  # Expected output: "Hello, I am <your name>"
+
+  # TODO 4: Use a shell command to run "hostname" on the local machine
+
+  # TODO 5: Use the debug command to print the output of the hostname command
+  #          (Hint: which builtin variable holds the last command's output?)
+  # Expected output: "My hostname is: <hostname>"
+
+  # TODO 6: Use setvar to create a variable called SCAN_CMD that combines
+  #          the string "nmap -p 22 " with the TARGET_IP variable
+
+  # TODO 7: Use debug to print the value of SCAN_CMD
+  # Expected output: "Scan command: nmap -p 22 <target_ip>"
+
+  # TODO 8: Use the debug command to print all variables from the variable store

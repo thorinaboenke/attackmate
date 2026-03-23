@@ -1,0 +1,36 @@
+#
+# Exercise 1: Solution
+#
+
+vars:
+  # TODO 1
+  ATTACKER_NAME: "Alice"
+
+  # TODO 2
+  TARGET_IP: 172.17.0.106
+
+commands:
+  # TODO 3
+  - type: debug
+    cmd: "Hello, I am $ATTACKER_NAME"
+
+  # TODO 4
+  - type: shell
+    cmd: hostname
+
+  # TODO 5
+  - type: debug
+    cmd: "My hostname is: $RESULT_STDOUT"
+
+  # TODO 6
+  - type: setvar
+    variable: SCAN_CMD
+    cmd: "nmap -p 22 $TARGET_IP"
+
+  # TODO 7
+  - type: debug
+    cmd: "Scan command: $SCAN_CMD"
+
+  # TODO 8
+  - type: debug
+    varstore: True

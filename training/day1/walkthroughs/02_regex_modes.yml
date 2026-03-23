@@ -1,0 +1,176 @@
+#
+# Walkthrough 2: Regex Modes
+# Description:
+#     Demonstrates all four regex modes using a simulated nmap output line.
+#     We use setvar to create test data so this walkthrough works without
+#     a live target.
+#
+#     Modes covered:
+#     1. findall - extract matches
+#     2. split   - tokenize a string
+#     3. search  - find first occurrence
+#     4. sub     - substitute/replace
+#
+# Run with:
+#     attackmate 02_regex_modes.yml
+#
+# Try with --debug for full match dumps:
+#     attackmate --debug 02_regex_modes.yml
+#
+
+commands:
+  # Set up test data (simulated nmap output line)
+  - type: setvar
+    variable: NMAP_LINE
+    cmd: "6667/tcp open irc UnrealIRCd"
+
+  - type: debug
+    cmd: "Input string: $NMAP_LINE"
+  - type: debug
+    cmd: "---"
+
+  # ============================================
+  # MODE 1: findall (default)
+  # Finds all non-overlapping matches of the pattern.
+  # Capture groups () produce the match variables.
+  # ============================================
+
+  - type: debug
+    cmd: "=== FINDALL MODE ==="
+
+  # Extract the port number using a capture group
+  - type: regex
+    input: NMAP_LINE
+    cmd: '(\d+)/tcp'
+    mode: findall
+    output:
+      PORT: "$MATCH_0"
+
+  - type: debug
+    cmd: "Extracted port (with capture group): $PORT"
+
+  # Without capture group -- entire match is $MATCH_0
+  - type: regex
+    input: NMAP_LINE
+    cmd: '\d+/tcp'
+    mode: findall
+    output:
+      FULL_MATCH: "$MATCH_0"
+
+  - type: debug
+    cmd: "Full match (no capture group): $FULL_MATCH"
+
+  - type: debug
+    cmd: "---"
+
+  - type: debug
+    cmd: "=== FINDALL MODE WITH NO MATCH==="
+
+  # What happens when findall does NOT match?
+  # The output variables are NOT updated, they keep their previous values.
+  # $REGEX_MATCHES_LIST is set to an empty list.
+  - type: regex
+    input: NMAP_LINE
+    cmd: '(\d+)/udp'
+    mode: findall
+    output:
+      NO_MATCH_PORT: "$MATCH_0"
+
+  - type: debug
+    cmd: "No-match findall: NO_MATCH_PORT = $NO_MATCH_PORT"
+  - type: debug
+    cmd: "(MATCH_0 still contains the literal $MATCH_0 because no match was found)"
+  - type: debug
+    cmd: "---"
+
+  # ============================================
+  # MODE 2: split
+  # Splits the input string at each match of the pattern.
+  # Each token becomes $MATCH_0, $MATCH_1, etc.
+  # ============================================
+
+  - type: debug
+    cmd: "=== SPLIT MODE ==="
+
+  # Split on whitespace
+  - type: regex
+    input: NMAP_LINE
+    cmd: "\ +"
+    mode: split
+    output:
+      TOKEN_0: "$MATCH_0"
+      TOKEN_1: "$MATCH_1"
+      TOKEN_2: "$MATCH_2"
+      TOKEN_3: "$MATCH_3"
+
+  - type: debug
+    cmd: "Token 0: $TOKEN_0"
+  - type: debug
+    cmd: "Token 1: $TOKEN_1"
+  - type: debug
+    cmd: "Token 2: $TOKEN_2"
+  - type: debug
+    cmd: "Token 3: $TOKEN_3"
+  - type: debug
+    cmd: "---"
+
+  # ============================================
+  # MODE 3: search
+  # Finds the first occurrence of the pattern.
+  # ============================================
+
+  - type: debug
+    cmd: "=== SEARCH MODE ==="
+
+  - type: regex
+    input: NMAP_LINE
+    cmd: "open"
+    mode: search
+    output:
+      SEARCH_RESULT: "$MATCH_0"
+
+  - type: debug
+    cmd: "Search found: $SEARCH_RESULT"
+  - type: debug
+    cmd: "---"
+
+  # ============================================
+  # MODE 4: sub (substitute)
+  # Replaces matches with a replacement string.
+  # $MATCH_0 contains the modified string.
+  # ============================================
+
+  - type: debug
+    cmd: "=== SUB MODE ==="
+
+  - type: regex
+    input: NMAP_LINE
+    cmd: "UnrealIRCd"
+    replace: "[REDACTED]"
+    mode: sub
+    output:
+      MODIFIED: "$MATCH_0"
+
+  - type: debug
+    cmd: "After substitution: $MODIFIED"
+
+  - type: debug
+    cmd: "---"
+
+  - type: debug
+    cmd: "=== SUB MODE WITHOUT MATCH ==="
+  # What happens when sub does NOT match?
+  # Unlike findall, sub always sets the output variable.
+  # If the pattern is not found, the original string is returned unchanged.
+  - type: regex
+    input: NMAP_LINE
+    cmd: "Apache"
+    replace: "[REDACTED]"
+    mode: sub
+    output:
+      NOT_MODIFIED: "$MATCH_0"
+
+  - type: debug
+    cmd: "Sub with no match: $NOT_MODIFIED"
+  - type: debug
+    cmd: "(the original string is returned unchanged)"

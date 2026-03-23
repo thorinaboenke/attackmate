@@ -1,0 +1,74 @@
+#
+# Exercise 3: Establishing an SSH Foothold
+# Difficulty: Intermediate
+#
+# Description:
+#     Build an attack playbook that bruteforces credentials and
+#     uses them to establish an SSH foothold on Metasploitable2.
+#
+#     This exercise practices:
+#     - Credential bruteforcing with Hydra
+#     - Regex parsing of tool output
+#     - SSH sessions (creates_session / session)
+#     - SFTP file transfer
+#     - Interactive mode for long-running commands
+#
+# Requirements:
+#     - Metasploitable2 VM running and reachable
+#     - hydra, wget installed
+#     - seclists installed (/usr/share/seclists/)
+#
+# Instructions:
+#     1. Replace the TODO lines with your implementation
+#     2. Run with: attackmate exercise_03_ssh_foothold.yml
+#
+
+vars:
+  TARGET: CHANGE_ME
+  PASSWDLIST: /usr/share/seclists/Passwords/darkweb2017-top1000.txt
+
+commands:
+  # ============================================
+  # PHASE 1: Credential Discovery
+  # ============================================
+
+  # TODO 1: Use hydra to bruteforce FTP credentials for the user "user"
+  #          Command: hydra -l user -P $PASSWDLIST $TARGET ftp
+
+  # TODO 2: Parse the password from hydra's output using regex
+  #          Hydra output format: "... login: user   password: <password>"
+  #          Store the password in a variable called PASSWORD
+
+  # TODO 3: Print the discovered password with debug
+
+  # ============================================
+  # PHASE 2: SSH Access
+  # ============================================
+
+  # TODO 4: Log in via SSH using the discovered password
+  #          - username: user
+  #          - password: use the PASSWORD variable
+  #          - hostname: use the TARGET variable
+  #          - Run "id" as the command to verify login
+  #          - Create a session called "foothold"
+
+  # TODO 5: Run "uname -a" on the target using the foothold session
+  #          to determine the OS and kernel version
+
+  # TODO 6: Print the OS information with debug
+
+  # ============================================
+  # PHASE 3: File Transfer
+  # ============================================
+
+  # TODO 7: Upload the enumeration script exercises/enum.sh to the target
+  #          at /tmp/enum.sh using SFTP with the "foothold" session.
+  #          Set mode to "755" to make it executable.
+  #
+  #          Hint: enum.sh is a custom script that checks for SUID binaries,
+  #          writable directories, running services, and more.
+
+  # TODO 8: Execute the uploaded script on the target via SSH
+  #          Use the "foothold" session and interactive mode.
+  #          Remember: interactive commands need \n at the end!
+  #          Save the output to /tmp/enum_results.txt

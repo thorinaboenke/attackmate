@@ -1,0 +1,50 @@
+#
+# Exercise 4: Solution
+#
+
+vars:
+  TARGET: 172.17.0.106
+  SCAN_PORTS:
+    - 21
+    - 22
+    - 80
+    - 443
+    - 6667
+
+commands:
+  - type: debug
+    cmd: "=== Multi-Port Scanner ==="
+  - type: debug
+    cmd: "Target: $TARGET"
+  - type: debug
+    cmd: "---"
+
+  # TODO 1
+  - type: loop
+    cmd: "items(SCAN_PORTS)"
+    commands:
+      # a) Scan the port
+      - type: shell
+        cmd: nmap -p $LOOP_ITEM $TARGET
+        exit_on_error: False
+
+      # b) Check if "open" appears in the output
+      - type: regex
+        cmd: "open"
+        mode: search
+        output:
+          PORT_STATUS: "$MATCH_0"
+
+      # c) Print status
+      - type: debug
+        cmd: "Port $LOOP_ITEM: $PORT_STATUS"
+
+      # d) Conditional message for open ports
+      - type: debug
+        cmd: "  --> Found open service on port $LOOP_ITEM!"
+        only_if: $PORT_STATUS =~ open
+
+  - type: debug
+    cmd: "---"
+  - type: debug
+    cmd: "=== Scan Complete ==="
