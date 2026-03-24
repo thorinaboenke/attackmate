@@ -31,7 +31,7 @@ Any playbook variable can be overridden by setting an environment variable with 
 ```bash
 # Override the METASPLOITABLE variable without editing the playbook
 export ATTACKMATE_METASPLOITABLE=10.10.10.50
-attackmate my_playbook.yml
+attackmate playbook.yml
 ```
 
 This is useful for running the same playbook against different targets without modification.
@@ -64,7 +64,7 @@ commands:
 
   # Step 2: The regex command reads $RESULT_STDOUT by default
   - type: regex
-    cmd: (\d+)/tcp open http
+    cmd: (\d+)/tcp open  http
     output:
       PORT: "$MATCH_0"
 

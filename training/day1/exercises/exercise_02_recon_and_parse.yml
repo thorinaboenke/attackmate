@@ -20,7 +20,7 @@
 # Hint: nmap output for an open port looks like:
 #     "21/tcp open  ftp"
 #     "22/tcp open  ssh"
-#     "80/tcp open http"
+#     "80/tcp open  http"
 #
 
 vars:

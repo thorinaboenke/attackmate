@@ -10,7 +10,7 @@ commands:
     cmd: nmap -p 80 $TARGET
 
   - type: regex
-    cmd: (\d+)/tcp open http
+    cmd: (\d+)/tcp open  http
     output:
       PORT: "$MATCH_0"
 
