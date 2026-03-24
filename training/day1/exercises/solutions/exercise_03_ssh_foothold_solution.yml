@@ -3,8 +3,8 @@
 #
 
 vars:
-  TARGET: 172.17.0.106
-  PASSWDLIST: /usr/share/seclists/Passwords/darkweb2017-top1000.txt
+  TARGET: 10.110.0.31
+  PASSWDLIST: ../../walkthroughs/passwordlist.txt
 
 commands:
   # PHASE 1: Credential Discovery
@@ -47,7 +47,7 @@ commands:
   # TODO 7
   - type: sftp
     cmd: put
-    local_path: exercises/enum.sh
+    local_path: ./enum.sh
     remote_path: /tmp/enum.sh
     session: "foothold"
     mode: "755"

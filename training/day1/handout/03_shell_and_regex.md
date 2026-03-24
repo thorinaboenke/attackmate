@@ -28,7 +28,7 @@ After execution, the command's stdout is stored in `$RESULT_STDOUT` and its retu
 ```yaml
 commands:
   - type: shell
-    cmd: nmap -A -T4 $TARGET
+    cmd: nmap -A -T4 172.17.0.106
     save: /tmp/nmap_results.txt
 ```
 
@@ -48,11 +48,11 @@ By default, regex uses `findall` mode and reads from `$RESULT_STDOUT`:
 commands:
   # Run hydra, output goes to $RESULT_STDOUT
   - type: shell
-    cmd: hydra -l user -P $PASSWDLIST $TARGET ftp
+    cmd: hydra -l user -P ./passwordlist.txt 172.17.0.106 ftp
 
   # Extract the password from hydra's output
   # Hydra output looks like:
-  # "[21][ftp] host: 172.17.0.106   login: user   password: letmein"
+  # "[21][ftp] host: 172.17.0.106   login: user   password: user"
   - type: regex
     cmd: ".*login: user.+password: (.+)"
     output:
@@ -166,7 +166,7 @@ commands:
 
   # Step 2: Extract the port number
   - type: regex
-    cmd: (\d+)/tcp open http
+    cmd: (\d+)/tcp open  http
     output:
       PORT: "$MATCH_0"
 

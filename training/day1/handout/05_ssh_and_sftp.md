@@ -12,7 +12,7 @@ commands:
     cmd: id
     hostname: 192.168.1.100
     username: user
-    password: letmein
+    password: user
 ```
 
 ### Connection Options
@@ -38,7 +38,7 @@ commands:
     cmd: id
     hostname: 192.168.1.100
     username: user
-    password: letmein
+    password: user
 
   # Subsequent commands: settings are reused automatically
   - type: ssh
@@ -65,7 +65,7 @@ commands:
     cmd: id
     hostname: 192.168.1.100
     username: user
-    password: letmein
+    password: user
     creates_session: "foothold"
 
   # Reuse the session (same connection, state is preserved)
@@ -114,7 +114,7 @@ commands:
     cmd: "bash\n"
     hostname: 192.168.1.100
     username: user
-    password: letmein
+    password: user
     interactive: True
     creates_session: "foothold"
 
@@ -170,7 +170,7 @@ commands:
     cmd: id
     hostname: 192.168.1.100
     username: user
-    password: letmein
+    password: user
     creates_session: "foothold"
 
   # Upload a file using the same session
@@ -214,7 +214,7 @@ This example demonstrates a complete SSH attack scenario against Metasploitable2
 ```yaml
 vars:
   TARGET: 192.168.1.100
-  PASSWDLIST: /usr/share/seclists/Passwords/darkweb2017-top1000.txt
+  PASSWDLIST: /usr/share/seclists/Passwords/passwordlist.txt
 
 commands:
   # 1. Reconnaissance

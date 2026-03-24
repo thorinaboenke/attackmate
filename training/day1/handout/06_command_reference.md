@@ -46,7 +46,7 @@ Quick reference for all command types and options covered today.
   cmd: id
   hostname: $TARGET
   username: user
-  password: letmein
+  password: user
   # Optional:
   port: 22
   key_filename: /path/to/key
@@ -71,7 +71,7 @@ Quick reference for all command types and options covered today.
   session: "name"              # Reuse SSH session
   hostname: $TARGET            # Or use cached settings
   username: user
-  password: letmein
+  password: user
 ```
 
 ### `regex`:Pattern Matching

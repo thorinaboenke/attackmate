@@ -3,7 +3,7 @@
 #
 
 vars:
-  TARGET: 172.17.0.106
+  TARGET: 10.110.0.31
 
 commands:
   # === Part A: Port Scanning ===
