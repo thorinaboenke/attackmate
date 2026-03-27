@@ -1,0 +1,69 @@
+#
+# Exercise 4: Modular Playbooks with Include (Stretch Goal)
+# Difficulty: Advanced
+#
+# Description:
+#     Refactor your solution from exercise 01 by extracting the post-
+#     exploitation commands into a reusable include file.
+#
+#     By the end of this exercise, the main playbook will contain only
+#     the exploit and the variable setup. All post-exploitation logic
+#     will live in exercises/includes/gather_commands.yml, which can
+#     then be reused from any future playbook.
+#
+#     This exercise practices:
+#     - include command
+#     - Variable passing between playbook and include files
+#     - Separating exploit logic from post-exploitation logic
+#
+# Requirements:
+#     - Metasploitable2 VM running and reachable
+#     - msfrpcd running: msfrpcd -P msf -a 127.0.0.1
+#     - Complete exercises/includes/gather_commands.yml first (see below)
+#     - Run with: attackmate --config ../config.yml exercise_04_include_refactor.yml
+#
+# Instructions:
+#     Step 1: Create the file exercises/includes/gather_commands.yml
+#             It should contain a "commands:" list that:
+#             a) Runs post/linux/gather/checkvm with SESSION: $GATHER_SESSION
+#             b) Runs post/linux/gather/enum_network with SESSION: $GATHER_SESSION
+#             c) Runs post/linux/gather/enum_users_history with SESSION: $GATHER_SESSION
+#
+#     Step 2: Fill in the TODO sections below so that the main playbook:
+#             a) Exploits vsftpd
+#             b) Sets $GATHER_SESSION to $LAST_MSF_SESSION
+#             c) Calls the include file
+#
+# Hint: Check handout 05_modular_playbooks.md and walkthrough 04 if stuck.
+# Hint: The walkthroughs/includes/ directory has working examples to reference.
+#
+
+vars:
+  TARGET: CHANGE_ME
+  ATTACKER: CHANGE_ME_ATTACKER
+  INCLUDE_PATH: ./includes
+
+commands:
+  # ============================================
+  # PHASE 1: Exploitation
+  # ============================================
+
+  # TODO 1: Use msf-module to exploit the vsftpd backdoor
+  #          (same as exercise 01, creates_session: shell)
+
+  # TODO 2: Verify access with msf-session (run "id")
+
+  # ============================================
+  # PHASE 2: Prepare Include Variables
+  # ============================================
+
+  # TODO 3: Use setvar to set GATHER_SESSION to $LAST_MSF_SESSION
+  #          This is the variable that gather_commands.yml will read
+
+  # ============================================
+  # PHASE 3: Include Post-Exploitation
+  # ============================================
+
+  # TODO 4: Use include to call $INCLUDE_PATH/gather_commands.yml
+  #          At this point the include file will run all post modules
+  #          using $GATHER_SESSION automatically

