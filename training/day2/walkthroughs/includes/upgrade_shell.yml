@@ -1,0 +1,47 @@
+#
+# Include: upgrade_shell.yml
+#
+# Description:
+#     Upgrades a raw Metasploit shell session to a fully interactive PTY
+#     by spawning Python pty, setting environment variables, and configuring
+#     terminal dimensions.
+#
+# Required variables (must be set by the calling playbook before include):
+#   $UPGRADESESSION  - the AttackMate session name of the raw shell to upgrade
+#
+# Example usage in a calling playbook:
+#   - type: setvar
+#     variable: UPGRADESESSION
+#     cmd: shell
+#   - type: include
+#     local_path: ./includes/upgrade_shell.yml
+#
+
+commands:
+  # Spawn a proper PTY using Python.
+  # This replaces the raw pipe with a real terminal, enabling job control,
+  # arrow keys, tab completion, and programs that require a TTY.
+  - type: msf-session
+    cmd: python -c "import pty;pty.spawn(\"/bin/bash\")";
+    session: $UPGRADESESSION
+
+  # Set SHELL and TERM so interactive programs behave correctly
+  - type: msf-session
+    cmd: export SHELL=bash
+    session: $UPGRADESESSION
+
+  - type: msf-session
+    cmd: export TERM=xterm256-color
+    session: $UPGRADESESSION
+
+  # Set terminal dimensions to avoid garbled output from tools like
+  # linpeas that format output based on terminal width
+  - type: msf-session
+    cmd: stty rows 38 columns 116
+    session: $UPGRADESESSION
+
+  # Set a simple prompt so AttackMate can reliably detect when a command
+  # has finished and the shell is waiting for input
+  - type: msf-session
+    cmd: 'export PS1=" >"'
+    session: $UPGRADESESSION

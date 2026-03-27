@@ -1,0 +1,52 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:148.0) Gecko/20100101 Firefox/148.0" version="29.6.4">
+  <diagram id="sliver_session_beacon" name="Sliver Session vs Beacon">
+    <mxGraphModel dx="1996" dy="1131" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=24;fontStyle=1;" value="Sliver C2: Session vs. Beacon" vertex="1">
+          <mxGeometry height="40" width="770" x="200" y="104" as="geometry" />
+        </mxCell>
+        <mxCell id="3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=17;fontStyle=1;" value="&lt;b&gt;Sliver C2 Server&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:14px;&quot;&gt;manages implants, sessions, beacons&lt;/font&gt;" vertex="1">
+          <mxGeometry height="84" width="430" x="370" y="158" as="geometry" />
+        </mxCell>
+        <mxCell id="4" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=14;fontStyle=2;fontColor=#9673a6;" value="mTLS / HTTP/S / WireGuard / DNS" vertex="1">
+          <mxGeometry height="26" width="570" x="300" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="5" edge="1" parent="1" source="3" style="html=1;endArrow=block;endFill=1;startArrow=block;startFill=1;strokeWidth=2;strokeColor=#9673a6;exitX=0.3;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="9" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6" edge="1" parent="1" source="3" style="html=1;endArrow=block;endFill=1;startArrow=block;startFill=1;strokeWidth=2;strokeColor=#9673a6;exitX=0.7;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="10" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=17;fontStyle=1;" value="&lt;b&gt;Session&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:14px;&quot;&gt;Live connection&lt;/font&gt;" vertex="1">
+          <mxGeometry height="84" width="300" x="130" y="346" as="geometry" />
+        </mxCell>
+        <mxCell id="10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=17;fontStyle=1;" value="&lt;b&gt;Beacon&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:14px;&quot;&gt;Periodic check-in&lt;/font&gt;" vertex="1">
+          <mxGeometry height="84" width="300" x="740" y="346" as="geometry" />
+        </mxCell>
+        <mxCell id="11" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0fff0;strokeColor=#82b366;fontSize=15;align=center;verticalAlign=top;" value="&lt;b&gt;Implant checks in continuously&lt;/b&gt;&lt;br&gt;&lt;br&gt;Commands execute in near real-time,&lt;br&gt;similar to an interactive shell.&lt;br&gt;&lt;br&gt;Noisier on the network, a constant&lt;br&gt;outbound connection is visible." vertex="1">
+          <mxGeometry height="149" width="400" x="80" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="12" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffff0;strokeColor=#d6b656;fontSize=15;align=center;verticalAlign=top;" value="&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;Implant polls at intervals&lt;/b&gt; (e.g. every 60 s)&lt;/div&gt;&lt;br&gt;Between check-ins there is no outbound&lt;br&gt;connection, quieter and harder to detect&lt;br&gt;via network monitoring.&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="149" width="480" x="610" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="13" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=14;fontColor=#2e7d32;fontStyle=1;" value="Interactive, noisier" vertex="1">
+          <mxGeometry height="30" width="400" x="80" y="641" as="geometry" />
+        </mxCell>
+        <mxCell id="14" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=14;fontColor=#bf7000;fontStyle=1;" value="Stealthier" vertex="1">
+          <mxGeometry height="30" width="480" x="610" y="641" as="geometry" />
+        </mxCell>
+        <mxCell id="15" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=17;fontStyle=3;fontColor=#666666;" value="Implant traffic (continuous)" vertex="1">
+          <mxGeometry height="28" width="300" x="130" y="691" as="geometry" />
+        </mxCell>
+        <mxCell id="17" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontStyle=3;fontColor=#666666;" value="Beacon traffic (periodic check-ins)" vertex="1">
+          <mxGeometry height="28" width="480" x="610" y="691" as="geometry" />
+        </mxCell>
+        <mxCell id="LZS_iF-RxW0J2G1dUhfl-23" edge="1" parent="1" source="12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -47,6 +47,16 @@ The training environment consists of two machines deployed on OpenStack:
 
 **Metasploitable2**: A deliberately vulnerable Linux VM with dozens of exploitable services. This is our target for the training. See the [Metasploitable2 documentation](https://docs.rapid7.com/metasploit/metasploitable-2/) for a full list of services and known vulnerabilities.
 
+> **SSH note:** Metasploitable2 uses legacy SSH key algorithms that modern OpenSSH clients reject by default. To connect via SSH manually, you might have to1 add the following to your `~/.ssh/config`:
+>
+> ```
+> Host <METASPLOITABLE_IP>
+>     HostKeyAlgorithms +ssh-rsa,ssh-dss
+>     PubkeyAcceptedKeyTypes +ssh-rsa,ssh-dss
+> ```
+>
+> Replace `<METASPLOITABLE_IP>` with your actual Metasploitable2 IP if it differs.
+
 ### Verify the Lab Setup
 
 Before starting, verify that your environment works by running these commands on the attacker machine:

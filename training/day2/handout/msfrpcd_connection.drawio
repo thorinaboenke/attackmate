@@ -1,0 +1,100 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:148.0) Gecko/20100101 Firefox/148.0" version="29.6.4">
+  <diagram id="msfrpcd_connection" name="AttackMate to Metasploit Connection">
+    <mxGraphModel dx="1996" dy="1958" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=24;fontStyle=1;" value="How AttackMate Connects to Metasploit" vertex="1">
+          <mxGeometry height="40" width="870" x="150" y="14" as="geometry" />
+        </mxCell>
+        <mxCell id="6" edge="1" parent="1" style="endArrow=none;html=1;dashed=1;strokeColor=#999999;strokeWidth=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="170" y="-41" as="sourcePoint" />
+            <mxPoint x="170" y="581" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7" edge="1" parent="1" style="endArrow=none;html=1;dashed=1;strokeColor=#999999;strokeWidth=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="585" y="-33" as="sourcePoint" />
+            <mxPoint x="585" y="589" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="8" edge="1" parent="1" style="endArrow=none;html=1;dashed=1;strokeColor=#999999;strokeWidth=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="998" y="-33" as="sourcePoint" />
+            <mxPoint x="998" y="589" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9" edge="1" parent="1" style="html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#6c8ebf;fontColor=#1a4d8a;fontSize=14;fontStyle=1;" value="msf-module command">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="170" y="192" as="sourcePoint" />
+            <mxPoint x="585" y="192" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="10" edge="1" parent="1" style="html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#82b366;fontColor=#2e7d32;fontSize=14;fontStyle=1;" value="run exploit / module">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="585" y="234" as="sourcePoint" />
+            <mxPoint x="1000" y="234" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="11" edge="1" parent="1" style="html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#b85450;fontColor=#b85450;fontSize=14;fontStyle=1;" value="attack on Target">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="998" y="267" as="sourcePoint" />
+            <mxPoint x="1148" y="267" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="12" edge="1" parent="1" style="html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#82b366;fontColor=#2e7d32;fontSize=14;fontStyle=1;" value="session opened">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1000" y="314" as="sourcePoint" />
+            <mxPoint x="585" y="314" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="13" edge="1" parent="1" style="html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#6c8ebf;fontColor=#1a4d8a;fontSize=14;fontStyle=1;" value="$LAST_MSF_SESSION">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="585" y="383" as="sourcePoint" />
+            <mxPoint x="170" y="383" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="14" edge="1" parent="1" style="html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#6c8ebf;fontColor=#1a4d8a;fontSize=14;fontStyle=1;" value="msf-session command">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="170" y="435" as="sourcePoint" />
+            <mxPoint x="585" y="435" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="15" edge="1" parent="1" style="html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#82b366;fontColor=#2e7d32;fontSize=14;fontStyle=1;" value="send command to active session">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="585" y="472" as="sourcePoint" />
+            <mxPoint x="1000" y="472" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="16" edge="1" parent="1" style="html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#6c8ebf;fontColor=#1a4d8a;fontSize=14;fontStyle=1;" value="$RESULT_STDOUT">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1000" y="541" as="sourcePoint" />
+            <mxPoint x="170" y="541" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="25" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=14;" value="Target" vertex="1">
+          <mxGeometry height="40" width="80" x="1151" y="246" as="geometry" />
+        </mxCell>
+        <mxCell id="26" parent="1" style="line;strokeColor=#cccccc;strokeWidth=4;fillColor=none;" value="" vertex="1">
+          <mxGeometry height="10" width="1110" x="60" y="333" as="geometry" />
+        </mxCell>
+        <mxCell id="27" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;fontStyle=2;fontColor=#666666;" value="Exploit phase (msf-module)" vertex="1">
+          <mxGeometry height="24" width="280" x="60" y="156" as="geometry" />
+        </mxCell>
+        <mxCell id="28" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;fontStyle=2;fontColor=#666666;" value="Session command phase (msf-session)" vertex="1">
+          <mxGeometry height="24" width="340" x="60" y="347" as="geometry" />
+        </mxCell>
+        <mxCell id="5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=16;fontStyle=1;" value="&lt;b&gt;Metasploit + Target&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:13px;&quot;&gt;(sessions, modules)&lt;/font&gt;" vertex="1">
+          <mxGeometry height="74" width="220" x="888" y="64" as="geometry" />
+        </mxCell>
+        <mxCell id="4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=16;fontStyle=1;" value="&lt;b&gt;msfrpcd&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:13px;&quot;&gt;(RPC API)&lt;/font&gt;" vertex="1">
+          <mxGeometry height="74" width="220" x="475" y="64" as="geometry" />
+        </mxCell>
+        <mxCell id="3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=16;fontStyle=1;" value="&lt;b&gt;AttackMate&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:13px;&quot;&gt;(playbook)&lt;/font&gt;" vertex="1">
+          <mxGeometry height="74" width="220" x="60" y="64" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
