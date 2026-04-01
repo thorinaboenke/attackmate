@@ -1,21 +1,19 @@
 # Module 1: Debugging AttackMate Playbooks and Lab Environments
 
-This module is a reference cheatsheet for diagnosing problems when attack chains fail. It covers the tools and commands you need to verify every layer: network reachability, open ports, running services, routing, and firewall rules.
+This is a reference for diagnosing problems when attack chains fail. It covers the tools and commands you need to verify every layer: network reachability, open ports, running services, routing, and firewall rules.
 
 ---
 
 ## AttackMate Itself
 
-Before blaming the network or the target, check that AttackMate is giving you the full picture.
-
-### Enable Debug Output
+### Enabling Debug Output
 
 ```bash
 # Shows variable dumps, resolved values, and full execution trace
 attackmate --debug playbook.yml
 ```
 
-### Inspect Variables Mid-Playbook
+### Inspecting Variables Mid-Playbook
 
 Insert a `debug` command anywhere to print the current state of a variable:
 
@@ -31,7 +29,7 @@ Insert a `debug` command anywhere to print the current state of a variable:
 ```
 
 
-### Check `only_if` Logic
+### Checking `only_if` Logic
 
 `only_if` silently skips commands. If a step is not running, print what the condition sees:
 
@@ -44,13 +42,15 @@ Insert a `debug` command anywhere to print the current state of a variable:
   only_if: $PORT == 80
 ```
 
-Variables are always strings. `$PORT == 80` compares `"80"` to `"80"`, which works. But `$PORT == 080` will fail silently.
+Variables are always saved as strings in the variable store. `$PORT == 80` compares `"80"` to `"80"`, which works. But `$PORT == 080` will fail silently.
 
 ---
 
 ## Network Connectivity
 
 ### Ping: Basic Reachability
+
+`ping` sends ICMP Echo Request packets to a host and waits for ICMP Echo Reply packets in return. It measures whether the host responds at all and how long the round trip takes (latency). Ping operates at the network layer (Layer 3) and does not test any specific service or port, it only tells you whether the machine is reachable at the IP level.
 
 ```bash
 # Send 4 packets to check if the host is up
@@ -70,7 +70,9 @@ ping -c 1 -W 1 <TARGET_IP>
 
 > **Note:** Some hosts block ICMP. A failed ping does not mean the host is down. Follow up with a port scan.
 
-### Check if a Specific Port is Open
+### Checking if a Specific Port is Open
+
+A **port** is a numbered endpoint (0–65535) that an operating system uses to route incoming network traffic to the right process. When a service is running and waiting for connections on a port, that port is **open**, meaning a client can connect to it. A closed port means nothing is listening there, and the OS will immediately refuse the connection. An open port does not tell you that the service is working correctly; it only tells you that something accepted the TCP handshake.
 
 ```bash
 # nc (netcat): attempt TCP connection, timeout after 3 seconds
@@ -102,6 +104,8 @@ nmap -p- <TARGET_IP>
 
 ### Test UDP Ports
 
+**UDP (User Datagram Protocol)** is a connectionless transport protocol. Unlike TCP, UDP does not perform a handshake before sending data and does not guarantee delivery or ordering. Services like DNS (port 53), SNMP (port 161), and TFTP use UDP because they prioritize speed over reliability. Testing UDP ports is harder than TCP: a lack of response can mean the port is open (the service received the packet and sent no reply), filtered (a firewall dropped it), or closed (the OS sent an ICMP "port unreachable" error). For this reason, UDP scanning is slower and less reliable.
+
 ```bash
 # UDP scan (requires root)
 sudo nmap -sU -p 53,161 <TARGET_IP>
@@ -114,7 +118,7 @@ nc -zuv <TARGET_IP> 53
 
 ## Netcat (nc) as a Debugging Tool
 
-Netcat is a Swiss Army knife for manually testing connections that AttackMate would otherwise automate.
+Netcat (`nc`) is a command-line tool that reads and writes raw data over TCP or UDP connections. It can act as either a client (connecting to a remote port) or a server (listening for incoming connections). Unlike `curl` or `ssh`, netcat sends and receives raw bytes without any protocol framing, making it ideal for testing whether a port is reachable, grabbing service banners, or simulating a simple listener for reverse shells.
 
 ### Manually Trigger a Service
 
@@ -135,20 +139,14 @@ Use this to verify that a reverse shell or payload is actually calling back:
 
 ```bash
 # Listen on port 4444, print whatever arrives
+# -l  listen mode (wait for an incoming connection instead of connecting out)
+# -v  verbose (print status messages like "listening on..." and "connection from...")
+# -n  no DNS resolution (use raw IP addresses, faster and avoids lookup failures)
+# -p  specify the port to listen on
 nc -lvnp 4444
 ```
 
 Then run your payload on the target and watch for the connection.
-
-### Transfer a File Over nc
-
-```bash
-# On the receiver:
-nc -lvnp 9000 > received_file
-
-# On the sender:
-nc <RECEIVER_IP> 9000 < file_to_send
-```
 
 ---
 
@@ -156,13 +154,29 @@ nc <RECEIVER_IP> 9000 < file_to_send
 
 ### Show the Routing Table
 
+The **routing table** is a list of rules that the kernel uses to decide where to send outgoing packets. Each entry specifies a destination network, the network interface to use, and optionally a gateway (next-hop router). When you send a packet to a target IP, the kernel looks up the most specific matching route and forwards the packet accordingly. If no route exists for the destination, the packet is dropped. The default route (`default` or `0.0.0.0/0`) is the fallback used for any IP that does not match a more specific entry.
+
 ```bash
 ip route show
 ```
 
+A typical routing table looks like this:
+
+```
+default via 192.168.1.1 dev eth0
+192.168.1.0/24 dev eth0 proto kernel src 192.168.1.50
+10.0.0.0/8 dev eth1 proto kernel src 10.0.0.5
+```
+
+- `default via 192.168.1.1 dev eth0`: all traffic not matching a specific route goes to the gateway `192.168.1.1` out of `eth0`
+- `192.168.1.0/24 dev eth0`: traffic to any address in `192.168.1.*` goes directly out `eth0` (same LAN)
+- `10.0.0.0/8 dev eth1`: the `10.*.*.*` network is reachable directly on `eth1`
+
 Look for: does a route exist to `<TARGET_IP>`? What interface is used? What is the gateway?
 
 ### Trace the Network Path
+
+`traceroute` reveals the sequence of routers (hops) a packet passes through on its way to the destination. It works by sending packets with incrementally increasing TTL (Time To Live) values. Each router that forwards a packet decrements the TTL by one. When TTL reaches zero, the router discards the packet and sends back an ICMP "time exceeded" message, revealing its IP address. By repeating this with TTL = 1, 2, 3, ... traceroute maps the full path. If a hop shows `* * *`, that router is either dropping probe packets or not sending ICMP replies (common on firewalls and cloud infrastructure).
 
 ```bash
 # Show each hop between attacker and target
@@ -176,6 +190,8 @@ traceroute -T -p 80 <TARGET_IP>
 ```
 
 ### Show Network Interfaces and IPs
+
+A **network interface** is the software representation of a network connection, either a physical NIC (network interface card) or a virtual one created by the OS. Each interface has a name (e.g., `eth0`, `ens3`, `lo`) and one or more IP addresses assigned to it. The loopback interface (`lo`) is always present and handles traffic to `127.0.0.1` without going to the network. In lab environments you typically have at least one interface for the management network and one for the lab/attack network. **When setting `LHOST` in a payload, you need the IP of the interface that the target can actually reach.**
 
 ```bash
 # All interfaces and their addresses
@@ -192,6 +208,10 @@ ip addr show eth0
 ss -tn state established
 
 # All listening sockets (what is this machine serving?)
+# -t  show TCP sockets only
+# -l  show only listening sockets (services waiting for connections)
+# -n  show numeric addresses and port numbers (no DNS/service name resolution)
+# -p  show the process name and PID that owns each socket
 ss -tlnp
 
 # Watch for connections appearing on a specific port
@@ -201,6 +221,30 @@ watch -n 1 "ss -tn | grep :4444"
 ---
 
 ## Firewall Rules
+
+`iptables` is the Linux kernel's built-in packet filtering system. It organizes rules into **chains** (ordered lists) within **tables**:
+
+- The `filter` table (the default) has three chains: `INPUT` (incoming packets destined for this host), `OUTPUT` (packets originating from this host), and `FORWARD` (packets being routed through this host).
+- The `nat` table handles address translation and port forwarding.
+
+Each chain has a **default policy** (usually `ACCEPT` or `DROP`) that applies when no rule matches. Rules are checked top to bottom; the first match wins.
+
+**What a rule looks like:**
+
+```
+Chain INPUT (policy ACCEPT)
+num  target  prot  opt  source         destination
+1    ACCEPT  tcp   --   0.0.0.0/0      0.0.0.0/0    tcp dpt:22
+2    DROP    tcp   --   10.0.0.5       0.0.0.0/0
+3    ACCEPT  all   --   0.0.0.0/0      0.0.0.0/0    state RELATED,ESTABLISHED
+```
+
+- `target`: what to do with a matching packet (`ACCEPT` lets it through, `DROP` silently discards it, `REJECT` discards it and sends an error back)
+- `prot`: protocol (`tcp`, `udp`, `all`)
+- `source` / `destination`: match by IP or subnet; `0.0.0.0/0` means any address
+- `dpt`: destination port
+
+To diagnose a connectivity problem, read the INPUT chain from top to bottom and ask: does a rule match my traffic before reaching the default policy?
 
 ### Inspect Current Rules
 
@@ -435,6 +479,25 @@ chmod 600 /path/to/key.pem
 chmod 700 ~/.ssh
 ```
 
+**How Linux file permissions work:** Every file has three sets of permissions — for the **owner**, the **group**, and **everyone else** (world). Each set has three bits: **r** (read = 4), **w** (write = 2), **x** (execute = 1). The three-digit number in `chmod` is the sum of those bits for owner, group, and world respectively:
+
+| chmod value | Meaning |
+|---|---|
+| `600` | owner: read+write (6), group: none (0), world: none (0) |
+| `644` | owner: read+write (6), group: read (4), world: read (4) |
+| `700` | owner: read+write+execute (7), group: none, world: none |
+| `755` | owner: all (7), group: read+execute (5), world: read+execute (5) |
+
+You can inspect current permissions with `ls -l`:
+
+```
+-rw------- 1 user user 1679 Apr  1 10:00 key.pem
+```
+
+The first 10 characters: `-` (file type), then `rw-------` (permissions: owner has read+write, group and world have nothing).
+
+SSH enforces that private keys are readable only by their owner (`600`). If the key file is readable by others, SSH treats it as compromised and refuses to use it.
+
 ### Test SSH Port is Actually Reachable
 
 ```bash
@@ -566,6 +629,14 @@ sudo kill <PID>
 
 ### Check System Logs for Errors
 
+`journalctl` queries the **systemd journal**, the centralized log store on modern Linux systems. All messages from the kernel, system services, and any process managed by systemd end up here. It replaces the older practice of reading scattered files in `/var/log/`. The flags used most often for debugging:
+
+- `-x`: add explanatory text (catalog entries) for some error messages
+- `-e`: jump to the end of the log (most recent entries)
+- `-f`: follow (tail) new messages as they arrive
+- `--since "5 minutes ago"`: limit output to a recent time window
+- `-u <service>`: show logs for a specific unit, e.g., `-u sliver` or `-u ssh`
+
 ```bash
 # Recent kernel and system messages
 journalctl -xe --since "5 minutes ago"
@@ -576,6 +647,23 @@ tail -f /var/log/auth.log
 ```
 
 ### Memory and CPU (when a tool is hanging)
+
+`ps aux` lists all currently running processes. The flags:
+
+- `a`: show processes from all users (not just yours)
+- `u`: show user-oriented output (username, CPU%, memory%, start time)
+- `x`: include processes not attached to a terminal (background daemons)
+
+The key columns in the output:
+
+| Column | Meaning |
+|---|---|
+| `USER` | owner of the process |
+| `PID` | process ID (use this to kill the process) |
+| `%CPU` | CPU usage percentage |
+| `%MEM` | percentage of physical RAM in use |
+| `STAT` | process state: `S` = sleeping, `R` = running, `Z` = zombie, `D` = uninterruptible wait |
+| `COMMAND` | the executable and its arguments |
 
 ```bash
 # Interactive process list
