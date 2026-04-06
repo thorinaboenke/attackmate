@@ -682,9 +682,9 @@ ps aux --sort=-%cpu | head -20
 | Is the target reachable? | `ping -c 1 <TARGET_IP>` |
 | Is a specific port open? | `nc -zvw3 <TARGET_IP> <PORT>` |
 | What ports are open? | `nmap -p- <TARGET_IP>` |
-| Is msfrpcd running? | `ss -tlnp \| grep 55553` |
-| Is Sliver server running? | `ps aux \| grep sliver-server` |
-| Is my listener up? | `ss -tlnp \| grep :<PORT>` |
+| Is msfrpcd running? | `ss -tlnp | grep 55553` |
+| Is Sliver server running? | `ps aux | grep sliver-server` |
+| Is my listener up? | `ss -tlnp | grep :<PORT>` |
 | Is firewall blocking input? | `sudo iptables -L INPUT -n -v` |
 | Allow a callback port | `sudo iptables -A INPUT -p tcp --dport <PORT> -j ACCEPT` |
 | What is my attacker IP? | `ip addr show` |
