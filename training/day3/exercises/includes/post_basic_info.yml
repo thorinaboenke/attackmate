@@ -1,0 +1,66 @@
+# Phase 7: Discovery - Basic System Information
+#
+# Runs a set of standard post-exploitation discovery commands via the active session.
+# Works with both Metasploit shell sessions (msf-session) and SSH sessions (ssh).
+#
+# Variables required: $SESSION_NAME
+# ATT&CK: T1082, T1087.001, T1057, T1016, T1049
+
+commands:
+  - type: debug
+    cmd: "Running discovery on $TARGET via session $SESSION_NAME..."
+
+  # TODO: confirm current user and effective privilege level
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: # TODO
+    metadata:
+      tactic: "TA0007"
+      technique: "T1082"
+      technique_name: "System Information Discovery"
+
+  # TODO: identify the machine name
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: # TODO
+
+  # TODO: get the kernel version and architecture
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: # TODO
+
+  # TODO: list network interfaces and IP addresses
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: # TODO
+    metadata:
+      tactic: "TA0007"
+      technique: "T1016"
+      technique_name: "System Network Configuration Discovery"
+
+  # TODO: to enumerate local accounts
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: # TODO
+    metadata:
+      tactic: "TA0007"
+      technique: "T1087.001"
+      technique_name: "Account Discovery: Local Account"
+
+  # TODO: list all running processes
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: # TODO
+    metadata:
+      tactic: "TA0007"
+      technique: "T1057"
+      technique_name: "Process Discovery"
+
+  # TODO: show active network connections
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: # TODO
+    metadata:
+      tactic: "TA0007"
+      technique: "T1049"
+      technique_name: "System Network Connections Discovery"
