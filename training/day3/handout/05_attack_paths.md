@@ -148,6 +148,18 @@ Pick **one** entry point.
 
 ## Phase 4.5: Privilege Escalation
 
+> **Background: The Linux root user and UID**
+>
+> Every process on Linux runs as a user identified by a numeric **UID** (User ID). UID 0 is the superuser, `root`. The kernel grants root unrestricted access: any file, any process, any system call. Most exploits land you as an unprivileged user (e.g. `daemon` UID 1, or `user` with a high UID). That shell cannot read `/etc/shadow`, install services, or modify system files.
+>
+> Two UIDs matter when escalating:
+> - **UID** (real user ID): who launched the process.
+> - **EUID** (effective user ID): what the kernel checks for permission decisions.
+>
+> The **SUID** bit closes the gap between them. When a file has the SUID bit set (`-rwsr-xr-x`), the kernel sets the process EUID to the *file owner* (root), not the caller. Any command that process runs therefore has root-level access, regardless of who triggered it. This is the mechanism the nmap exercise below exploits.
+>
+> Run `id` at any point to see your current UID and EUID.
+
 **Skip this phase if your entry gave you root already** (vsftpd, Samba).
 
 Required for: SSH entry (user user),  distcc entry (daemon user).
