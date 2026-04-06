@@ -4,6 +4,18 @@
 
 The `ssh` command executes commands on a remote host via SSH. This is how you interact with a compromised machine after gaining credentials.
 
+> **Background: SSH Authentication**
+>
+> SSH (Secure Shell) encrypts the entire session. Before any commands run, the client and server perform a handshake to authenticate each other. There are two common methods for authenticating the *user*:
+>
+> **Password authentication**
+> The client sends the username and password to the server. The server checks them against `/etc/shadow` (or PAM).
+>
+> **Public key authentication**
+> The client generates a keypair: a **private key** (kept secret on the attacker machine) and a **public key** (installed on the target in `~/.ssh/authorized_keys`). During login, the server sends a challenge encrypted with the public key. Only the holder of the matching private key can decrypt and answer it. No password is transmitted. This is why installing a public key in `authorized_keys` is an effective persistence technique: the attacker can log back in silently at any time, even if the account password is changed.
+>
+> AttackMate supports both methods: use `password` for password auth or `key_filename` pointing to the private key file for key-based auth.
+
 ### Basic Usage
 
 ```yaml
