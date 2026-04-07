@@ -1,0 +1,46 @@
+# Exercise 1 SOLUTION: Browser Automation
+#
+# Automates a DVWA login using the browser command type.
+# Selector values for DVWA's login form:
+#   username field : input[name='username']
+#   password field : input[name='password']
+#   submit button  : input[type='submit']
+
+vars:
+  TARGET: CHANGE_ME   # Replace with the Metasploitable2 IP address
+
+commands:
+  # Open the DVWA login page in a named browser session
+  - type: browser
+    cmd: visit
+    url: "http://$TARGET/dvwa/login.php"
+    creates_session: dvwa_session
+
+  # Fill in the username
+  - type: browser
+    cmd: type
+    selector: "input[name='username']"
+    text: "admin"
+    session: dvwa_session
+
+  # Fill in the password
+  - type: browser
+    cmd: type
+    selector: "input[name='password']"
+    text: "password"
+    session: dvwa_session
+
+  # Click the login button
+  - type: browser
+    cmd: click
+    selector: "input[type='submit']"
+    session: dvwa_session
+
+  # Screenshot the result — the page title should change to "Welcome :: Damn Vulnerable Web Application"
+  - type: browser
+    cmd: screenshot
+    screenshot_path: /tmp/dvwa_result.png
+    session: dvwa_session
+
+  - type: debug
+    cmd: "Done. Check /tmp/dvwa_result.png to verify the login result."

@@ -11,13 +11,13 @@
 
 vars:
   TARGET: 192.168.56.101          # Metasploitable2 IP address
-  ATTACKER_IP: 192.168.56.102     # Your attacker machine IP (used as LHOST for callbacks)
+  ATTACKER_IP: 192.168.56.1     # Your attacker machine IP (used as LHOST for callbacks)
   LPORT: "4444"              # Listener port for reverse shells
 
 # BEFORE YOU RUN: make sure callback ports are reachable
 # ─────────────────────────────────────────────────────
 # Reverse shells and Meterpreter sessions require the TARGET to connect BACK to
-# ATTACKER_IP on LPORT (and port 4445 if you use the Meterpreter upgrade).
+# ATTACKER_IP on LPORT 4444 (and port 4445 if you use the Meterpreter upgrade).
 # If your attacker machine has a firewall, these inbound connections will be
 # silently dropped and the session will never appear.
 #
@@ -53,7 +53,7 @@ commands:
   #   entry_vsftpd.yml   - vsftpd 2.3.4 backdoor   (port 21)
   #   entry_samba.yml    - Samba usermap_script     (port 445)
   #
-  # Reccomended: Options that give a low-privilege shell (Phase 4.5 required):
+  # Reccomended for practice: Options that give a low-privilege shell (Phase 4.5 required):
   #   entry_ssh.yml      - SSH weak credentials     (port 22, user/user)
   #   entry_distcc.yml   - distcc daemon RCE         (port 3632)
   #
@@ -67,14 +67,24 @@ commands:
   # - type: include
   #   local_path: includes/entry_samba.yml
 
-   - type: include
-     local_path: solutions/solution_entry_ssh.yml
+  # - type: include
+  #   local_path: includes/entry_ssh.yml
 
   # - type: include
   #   local_path: includes/entry_distcc.yml
 
-   - type: debug
-     cmd: $SESSION_NAME created
+  # - type: debug
+  #   cmd: $SESSION_NAME created
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Upgrade raw shell if needed
+# ─────────────────────────────────────────────────────────────────────────────
+  # - type: setvar
+  #   variable: UPGRADESESSION
+  #   cmd: $SESSION_NAME
+
+  # - type: include
+  #   local_path: includes/upgrade_shell.yml
 
   # ─────────────────────────────────────────────────────────────────────────────
   # Phase 4.5: Privilege Escalation  -  skip if your entry gave root
@@ -86,9 +96,6 @@ commands:
 
   # - type: include
   #   local_path: includes/privesc_suid_nmap.yml
-
-  # - type: include
-  #   local_path: includes/privesc_suggester.yml
 
   # ─────────────────────────────────────────────────────────────────────────────
   # Phase 5: Persistence  -  choose one or more

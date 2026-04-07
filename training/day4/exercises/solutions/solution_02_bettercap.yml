@@ -1,0 +1,29 @@
+# Exercise 2 SOLUTION: Bettercap Network Discovery
+
+commands:
+  # Enable passive network probing
+  - type: bettercap
+    cmd: post_api_session
+    data:
+      cmd: "net.probe on"
+
+  - type: debug
+    cmd: "Network probing started. Waiting 15 seconds for discovery..."
+
+  # Wait for Bettercap to collect data
+  - type: sleep
+    cmd: "15"
+
+  # Stop probing
+  - type: bettercap
+    cmd: post_api_session
+    data:
+      cmd: "net.probe off"
+
+  # Retrieve the discovered LAN device list
+  - type: bettercap
+    cmd: get_session_lan
+
+  # Print the results
+  - type: debug
+    cmd: "Discovered LAN hosts: $RESULT_STDOUT"

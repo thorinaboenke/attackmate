@@ -1,0 +1,62 @@
+# Exercise 1: Browser Automation
+#
+# Goal: Automate a web login flow using the browser command type.
+# You will visit a login page, fill in credentials, submit the form,
+# and take a screenshot to confirm the result.
+#
+# Target: DVWA (Damn Vulnerable Web Application) running on Metasploitable2.
+#         The login page is at http://<TARGET>/dvwa/login.php
+#         Default credentials: admin / password
+#
+# What you need to fill in:
+#   - The URL to visit
+#   - CSS selectors for the username field, password field, and submit button
+#   - The session name to use across commands
+#   - The screenshot path
+#
+# Hint: Open the login page in your own browser, right-click an element,
+#       and choose "Inspect" to find the selector.
+
+vars:
+  TARGET: CHANGE_ME   # Replace with the Metasploitable2 IP address
+
+commands:
+  # Step 1: Open the DVWA login page and start a named browser session.
+  # TODO: Fill in the url and creates_session fields.
+  - type: browser
+    cmd: visit
+    url:             # TODO: http://<TARGET>/dvwa/login.php
+    creates_session: # TODO: choose a session name (e.g. dvwa_session)
+
+  # Step 2: Type the username into the username input field.
+  # TODO: Fill in the selector, text, and session fields.
+  - type: browser
+    cmd: type
+    selector:  # TODO: CSS selector for the username field
+    text:      # TODO: "admin"
+    session:   # TODO: same session name as above
+
+  # Step 3: Type the password into the password input field.
+  # TODO: Fill in the selector, text, and session fields.
+  - type: browser
+    cmd: type
+    selector:  # TODO: CSS selector for the password field
+    text:      # TODO: "password"
+    session:   # TODO: same session name as above
+
+  # Step 4: Click the login button.
+  # TODO: Fill in the selector and session fields.
+  - type: browser
+    cmd: click
+    selector:  # TODO: CSS selector for the submit button
+    session:   # TODO: same session name as above
+
+  # Step 5: Take a screenshot to capture the page after login.
+  # TODO: Fill in the screenshot_path and session fields.
+  - type: browser
+    cmd: screenshot
+    screenshot_path: # TODO: /tmp/dvwa_result.png
+    session:         # TODO: same session name as above
+
+  - type: debug
+    cmd: "Done. Check the screenshot to verify the login result."

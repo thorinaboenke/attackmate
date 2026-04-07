@@ -1,0 +1,23 @@
+# Test playbook for Exercise 4: Custom Executor
+#
+# Run this after completing the schema and executor and wiring them in:
+#   uv run attackmate training/day4/exercises/exercise_04_custom_executor/test_playbook.yml
+#
+# Expected output:
+#   - An INFO log line with your message
+#   - A debug line showing "Executor returned: My first custom executor works!"
+
+commands:
+  # Test 1: Use the default message
+  - type: hello
+
+  - type: debug
+    cmd: "Default message returned: $RESULT_STDOUT"
+
+  # Test 2: Use a custom message
+  - type: hello
+    message: "My first custom executor works!"
+
+  - type: debug
+    cmd: "Custom message returned: $RESULT_STDOUT"
+

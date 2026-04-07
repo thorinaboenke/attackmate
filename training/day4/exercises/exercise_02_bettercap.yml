@@ -1,0 +1,50 @@
+# Exercise 2: Bettercap Network Discovery
+#
+# Goal: Use the bettercap command type to discover hosts on the local network.
+#
+# This exercise assumes Bettercap is already running with the REST API enabled:
+#   sudo bettercap -eval "api.rest on; api.rest.port 8081; api.rest.username btrcp; api.rest.password secret"
+#
+# The attackmate config file (config.yml) must have a bettercap_config section:
+#   bettercap_config:
+#     default:
+#       url: "http://localhost:8081"
+#       username: btrcp
+#       password: secret
+#
+# What you need to fill in:
+#   - The bettercap command to start passive network probing
+#   - The bettercap command to query the discovered LAN devices
+#   - A debug command to print the result
+
+commands:
+  # Step 1: Enable passive network probing so Bettercap starts discovering hosts.
+  # Probing sends ARP queries and listens for responses to map the network.
+  # TODO: Fill in the cmd and data fields to run "net.probe on".
+  - type: bettercap
+    cmd:  # TODO
+    data: # TODO
+
+  - type: debug
+    cmd: "Network probing started. Waiting 15 seconds for discovery..."
+
+  # Step 2: Wait for Bettercap to collect some data.
+  # The sleep cmd value is in seconds as a string.
+  - type: sleep
+    cmd: "15"
+
+  # Step 3: Stop probing.
+  # TODO: Send "net.probe off" to the session.
+  - type: bettercap
+    cmd:  # TODO
+    data: # TODO
+
+  # Step 4: Retrieve the list of discovered LAN devices.
+  # TODO: Fill in the cmd field to query the LAN device list.
+  - type: bettercap
+    cmd:  # TODO
+
+  # Step 5: Print the results.
+  # TODO: Add a debug command that prints $RESULT_STDOUT.
+  - type: debug
+    cmd: "Discovered LAN hosts: $RESULT_STDOUT"
