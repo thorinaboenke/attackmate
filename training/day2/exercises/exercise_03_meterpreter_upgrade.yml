@@ -60,7 +60,7 @@ commands:
   #          - payload_options: LHOST=$ATTACKER, LPORT=$LPORT_UPGRADE
   #          - creates_session: meterpreter
 
-  # TODO 5: Sleep for 2 seconds to let the Meterpreter session initialize
+  # TODO 5: Sleep for 5 seconds to let the Meterpreter session initialize
 
   # ============================================
   # PHASE 3: Meterpreter Post-Exploitation

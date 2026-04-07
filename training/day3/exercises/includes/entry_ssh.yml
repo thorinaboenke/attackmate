@@ -13,8 +13,8 @@ commands:
     cmd: "Opening SSH session to $TARGET with known credentials..."
 
   # TODO: Open an SSH session using the weak credentials.
-  # Fill in username and password. The session name is ssh_foothold.
-  # You can run 'id' as the first command so you immediately see which user you landed as.
+  # Fill in username and password. Use ssh_foothold as the session name so we can save it in a variable in the next command and reference it in later phases.
+  # You can run 'id' as the first command to immediately see which user you landed as.
   - type: ssh
   # TODO
 

@@ -20,7 +20,7 @@ commands:
   # TODO: Download /etc/passwd via SFTP.
   # Use the sftp command type with cmd: get.
   # Fill in hostname, username, and password.
-  # Use credentials you discovered or created (backdoor user, msfadmin, root key, etc.)
+  # Use credentials (password or ssh key) you discovered or created (backdoor user, msfadmin, root key, etc.)
   - type: sftp
     cmd: get
     hostname: $TARGET
@@ -36,7 +36,7 @@ commands:
   # TODO: Download /etc/passwd via SFTP.
   # Use the sftp command type with cmd: get.
   # Fill in hostname, username, and password.
-  # Use credentials you discovered or created (backdoor user, msfadmin, root key, etc.)
+  # Use credentials (password or ssh key) you discovered or created (backdoor user, msfadmin, root key, etc.)
   - type: sftp
     cmd: get
     hostname: $TARGET
