@@ -5,9 +5,7 @@
 # When finished, copy this file to:
 #   src/attackmate/schemas/hello.py
 
-from typing import Literal
 from attackmate.schemas.base import BaseCommand      # TODO: check this import matches the real path
-from attackmate.command import CommandRegistry
 
 
 # TODO: Register this command class with the registry using the decorator.

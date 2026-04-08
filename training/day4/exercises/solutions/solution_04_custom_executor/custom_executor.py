@@ -11,5 +11,5 @@ from attackmate.schemas.hello import HelloCommand
 @executor_factory.register_executor('hello')
 class HelloExecutor(BaseExecutor):
     async def _exec_cmd(self, command: HelloCommand) -> Result:
-        self.logger.info(f"Hello: {command.message}")
+        self.logger.info(f'Hello: {command.message}')
         return Result(stdout=command.message, returncode=0)

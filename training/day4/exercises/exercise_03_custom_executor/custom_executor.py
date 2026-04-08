@@ -7,7 +7,6 @@
 
 from attackmate.executors.baseexecutor import BaseExecutor
 from attackmate.result import Result
-from attackmate.executors.executor_factory import executor_factory
 # TODO: Import HelloCommand from the schema file.
 
 

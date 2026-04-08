@@ -10,4 +10,4 @@ from attackmate.command import CommandRegistry
 @CommandRegistry.register('hello')
 class HelloCommand(BaseCommand):
     type: Literal['hello']
-    message: str = "Hello, AttackMate!"
+    message: str = 'Hello, AttackMate!'
