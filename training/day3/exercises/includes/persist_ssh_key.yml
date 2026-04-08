@@ -57,6 +57,7 @@ commands:
   # Step 5: Test backdoor access - open a fresh SSH session using the private key.
   # TODO: Fill in the username (root, msfadmin, etc.) matching where you installed the key.
   # key_filename points to the private key on the attacker machine.
+  # edgecase: If the ssh server ist old like Metasploitable2's, you may need to disable rsa-sha2-256 and rsa-sha2-512 algorithms since they are not supported.
   - type: ssh
     cmd: id
     hostname: $TARGET
