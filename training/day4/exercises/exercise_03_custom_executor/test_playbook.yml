@@ -16,8 +16,7 @@ commands:
 
   # Test 2: Use a custom message
   - type: hello
-    message: "My first custom executor works!"
+    message: "Working first custom executor!"
 
   - type: debug
     cmd: "Custom message returned: $RESULT_STDOUT"
-
