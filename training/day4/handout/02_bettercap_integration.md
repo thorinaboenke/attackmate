@@ -9,8 +9,8 @@ AttackMate's `bettercap` lets you integrate network-layer attacks directly into 
 Bettercap must be running with its REST API enabled before any `bettercap` command will work:
 
 ```bash
-# Start Bettercap with the REST API on port 8081
-sudo bettercap -eval "api.rest on; api.rest.port 8081; api.rest.username btrcp; api.rest.password secret"
+# Start Bettercap with the REST API (bettercap v2 requires the "set" prefix for parameters)
+sudo bettercap -eval "set api.rest.username btrcp; set api.rest.password secret; api.rest on"
 ```
 
 ## Configuration

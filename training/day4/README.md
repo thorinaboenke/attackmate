@@ -51,7 +51,7 @@ Metasploitable2 must be reachable. DVWA is available at `http://<TARGET>/dvwa/`.
 Bettercap must be installed and running with the REST API enabled:
 
 ```bash
-sudo bettercap -eval "api.rest on; api.rest.port 8081; api.rest.username btrcp; api.rest.password secret"
+sudo bettercap -eval "set api.rest.username btrcp; set api.rest.password secret; api.rest on"
 ```
 
 Add a `bettercap_config` section to the AttackMate config file:
