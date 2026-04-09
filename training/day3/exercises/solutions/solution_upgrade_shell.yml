@@ -45,3 +45,6 @@ commands:
   - type: msf-session
     cmd: 'export PS1=" >"'
     session: $UPGRADESESSION
+
+  - type: sleep
+    seconds: 2
