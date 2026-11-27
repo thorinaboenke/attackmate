@@ -36,6 +36,8 @@ from .sliver import (
     SliverHttpsListenerCommand,
     SliverGenerateCommand,
 )
+# c2url Commands
+from .c2url import C2urlCommand, C2urlSessionCommand
 
 
 #   Pydantic nested discrimanated unions apply the OUTER discriminator ('type') to the *nested* union member.
@@ -92,6 +94,8 @@ RemotelyExecutableCommand: TypeAlias = Annotated[
         JsonCommand,
         VncCommand,
         BettercapCommand,
+        C2urlCommand,
+        C2urlSessionCommand,
     ],
     Field(discriminator='type'),  # Outer discriminator (type)
 ]

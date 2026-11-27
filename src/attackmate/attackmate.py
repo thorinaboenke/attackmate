@@ -115,6 +115,7 @@ class AttackMate:
             'remote_config': self.pyconfig.remote_config,
             'msfsessionstore': self.msfsessionstore,
             'sliver_config': self.pyconfig.sliver_config,
+            'c2url_config': self.pyconfig.c2url_config,
             'runfunc': self._run_commands,
         }
         return config
@@ -161,7 +162,7 @@ class AttackMate:
         cfg = self.pyconfig.cmd_config
         base_delay = cfg.command_delay or 0
         for command in commands:
-            command_type = 'ssh' if command.type == 'sftp' else command.type
+            command_type = {'sftp': 'ssh', 'c2url-session': 'c2url'}.get(command.type, command.type)
             executor = self._get_executor(command_type)
             if executor:
                 if command.type not in ('sleep', 'debug', 'setvar'):
@@ -189,7 +190,7 @@ class AttackMate:
             Commands running in backgound return
             ``Result('Command started in background', 0)`` immediately.
         """
-        command_type = 'ssh' if command.type == 'sftp' else command.type
+        command_type = {'sftp': 'ssh', 'c2url-session': 'c2url'}.get(command.type, command.type)
         executor = self._get_executor(command_type)
         if executor:
             result = await executor.run(command, self.is_api_instance)
@@ -216,6 +217,9 @@ class AttackMate:
             await sliver_session_executor.cleanup()
         if (remote_executor := self.executors.get('remote')):
             remote_executor.cleanup()
+        # c2url
+        if (c2url_executor := self.executors.get('c2url')):
+            c2url_executor.cleanup()
 
     async def main(self):
         """Execute the full playbook and clean up all sessions.

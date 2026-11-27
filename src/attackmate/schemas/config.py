@@ -22,6 +22,14 @@ class CommandConfig(BaseModel):
     command_delay_jitter_max: float = 2.0
 
 
+class C2urlConfig(BaseModel):
+    token: Optional[str] = None
+    certificate: Optional[str] = None
+    private_key: Optional[str] = None
+    merge_stderr: bool = True
+    upgrade_pty: bool = False
+
+
 class BettercapConfig(BaseModel):
     url: str
     username: Optional[str] = None
@@ -42,6 +50,15 @@ class Config(BaseModel):
     cmd_config: CommandConfig = CommandConfig(loop_sleep=5, command_delay=0)
     bettercap_config: Dict[str, BettercapConfig] = {}
     remote_config: Dict[str, RemoteConfig] = {}
+    c2url_config: Dict[str, C2urlConfig] = {}
+
+    @field_validator('c2url_config', mode='before')
+    @classmethod
+    def migrate_c2url_config(cls, v):
+        # Handle a bare C2urlConfig instance passed by embedded-API callers.
+        if isinstance(v, C2urlConfig):
+            return {'default': v}
+        return v
 
     @field_validator('msf_config', mode='before')
     @classmethod

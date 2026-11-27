@@ -17,6 +17,7 @@ The optional configuration file is in yaml-format and is divided into five secti
 * **msf_config**: connection settings for the msfrpcd
 * **bettercap_config**: connection settings for the bettercap rest-api
 * **sliver_config**: connection settings for the sliver-api
+* **c2url_config**: settings for one or more c2url controllers
 * **remote_config**: connection settings for the remote attackmate server
 
 The following configuration file is an example for a basic configuration with
@@ -62,4 +63,5 @@ For detailed information about each config section see:
    bettercap_config
    msf_config
    sliver_config
+   c2url_config
    remote_config

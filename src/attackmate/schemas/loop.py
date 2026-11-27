@@ -14,6 +14,7 @@ from .tempfile import TempfileCommand
 from .debug import DebugCommand
 from .regex import RegExCommand
 from .browser import BrowserCommand
+from .c2url import C2urlCommand, C2urlSessionCommand
 
 from .metasploit import MsfModuleCommand, MsfSessionCommand, MsfPayloadCommand
 
@@ -66,6 +67,8 @@ Commands = List[
         SliverSessionTERMINATECommand,
         SliverHttpsListenerCommand,
         SliverGenerateCommand,
+        C2urlCommand,
+        C2urlSessionCommand,
     ]
 ]
 

@@ -5,7 +5,7 @@ authors = [
 ]
 description = "AttackMate is an attack orchestration tool that executes full attack-chains based on playbooks."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 keywords = ["Pentest", "Attack", "Orchestration", "Hacking", "Simulating", "Attackchain"]
 license = {text = "GPL-3.0"}
 dependencies = [
@@ -29,8 +29,12 @@ dependencies = [
     "passlib",
     "python-multipart>=0.0.32",
     "attackmate-client>=0.1.2",
+    "c2url",
 ]
 dynamic = ["version"]
+
+[tool.uv.sources]
+c2url = { path = "../c2url-private", editable = true }
 
 [project.scripts]
 attackmate = "attackmate.__main__:main"

@@ -21,8 +21,10 @@ from .common.regexexecutor import RegExExecutor
 from .common.jsonexecutor import JsonExecutor
 from .remote.remoteexecutor import RemoteExecutor
 from .browser.browserexecutor import BrowserExecutor
+from .c2url.c2urlexecutor import C2urlExecutor
 
 __all__ = [
+    'C2urlExecutor',
     'RemoteExecutor',
     'BrowserExecutor',
     'ShellExecutor',

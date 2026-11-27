@@ -256,6 +256,7 @@ The next pages will describe each command type in detail.
 
    bettercap
    browser
+   c2url
    debug
    father
    httpclient
